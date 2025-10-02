@@ -1,3 +1,11 @@
+<?php
+include("db_connect.php");
+
+// Fetch products dynamically
+$sql = "SELECT name, description, price, stock, image FROM products";
+$result = $conn->query($sql);
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -369,41 +377,37 @@
     </section>
 
     <section class="products" id="products">
-        <h2>Our Specialties</h2>
-        <p class="products-subtitle">Handcrafted with love, delivered with care</p>
-        
-        <div class="products-grid">
-            <div class="product-card">
-                <div class="product-image">🍚</div>
-                <div class="product-info">
-                    <h3>Pastil</h3>
-                    <p>Authentic Maguindanaon delicacy wrapped in banana leaves. Perfectly seasoned rice with your choice of chicken or beef.</p>
-                    <div class="product-price">₱85 - ₱120</div>
-                    <button class="order-btn">Add to Cart</button>
-                </div>
-            </div>
+    <h2>Our Specialties</h2>
+    <p class="products-subtitle">Handcrafted with love, delivered with care</p>
 
-            <div class="product-card">
-                <div class="product-image">🍧</div>
-                <div class="product-info">
-                    <h3>Halo-Halo</h3>
-                    <p>Classic Filipino dessert with premium ingredients. Shaved ice, sweet beans, fruits, leche flan, ube ice cream & more!</p>
-                    <div class="product-price">₱95 - ₱150</div>
-                    <button class="order-btn">Add to Cart</button>
-                </div>
-            </div>
-
-            <div class="product-card">
-                <div class="product-image">🥥</div>
-                <div class="product-info">
-                    <h3>Special Treats</h3>
-                    <p>Explore our rotating menu of Filipino favorites. From bibingka to puto bumbong, kakanin to sapin-sapin!</p>
-                    <div class="product-price">₱65 - ₱180</div>
-                    <button class="order-btn">Add to Cart</button>
-                </div>
-            </div>
-        </div>
-    </section>
+    <div class="products-grid">
+        <?php
+        if ($result->num_rows > 0) {
+            while($row = $result->fetch_assoc()) {
+                echo "
+                <div class='product-card'>
+                    <div class='product-image'>";
+                        if (!empty($row['image'])) {
+                            echo "<img src='uploads/{$row['image']}' alt='{$row['name']}' style='width:100%;height:250px;object-fit:cover;border-radius:10px;'>";
+                        } else {
+                            echo "🍴"; // fallback emoji
+                        }
+                echo "</div>
+                    <div class='product-info'>
+                        <h3>{$row['name']}</h3>
+                        <p>{$row['description']}</p>
+                        <div class='product-price'>₱{$row['price']}</div>
+                        <p style='color:gray;font-size:0.9rem;'>Stock: {$row['stock']}</p>
+                        <button class='order-btn'>Add to Cart</button>
+                    </div>
+                </div>";
+            }
+        } else {
+            echo "<p style='text-align:center;'>No products available yet.</p>";
+        }
+        ?>
+    </div>
+</section>
 
     <section class="features" id="features">
         <h2>Why Choose Flakies?</h2>
