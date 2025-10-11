@@ -367,9 +367,15 @@ $result = $conn->query($sql);
 
     <section class="hero">
         <div class="hero-content">
+<<<<<<< HEAD
             <h1>Sarap ng Pilipinas! 🇵🇭</h1>
             <p>Authentic Filipino delicacies delivered fresh to your door. From savory pastils to refreshing halo-halo, experience the taste of home.</p>
             <div class="cta-buttons">
+=======
+            <h1><span>Flakies</span> — Sarap ng Pilipinas! 🇵🇭</h1>
+            <p>Bringing the authentic taste of Pastil and Halo-Halo straight to your table — a taste of Filipino comfort and tradition in every bite.</p>
+            <div class="hero-buttons">
+>>>>>>> 914e68e (Updated index.php design section)
                 <button class="btn btn-primary">Order Now</button>
                 <button class="btn btn-secondary">View Full Menu</button>
             </div>
