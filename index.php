@@ -506,7 +506,7 @@ $result = $conn->query($sql);
     <<section class="hero">
         <div class="hero-content">
             <h1><span>Flakies</span> — Sarap ng Pilipinas! 🇵🇭</h1>
-            <p>Bringing the best of Filipino street and home delicacies to your doorstep. Taste nostalgia, love, and warmth in every bite.</p>
+            <p>Bringing the authentic taste of Pastil and Halo-Halo straight to your table — a taste of Filipino comfort and tradition in every bite.</p>
             <div class="hero-buttons">
                 <button class="btn btn-primary">Order Now</button>
                 <button class="btn btn-secondary">View Menu</button>
