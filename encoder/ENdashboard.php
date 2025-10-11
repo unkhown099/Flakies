@@ -24,24 +24,11 @@
         <p class="welcome">Welcome, <?php echo htmlspecialchars($username); ?>!</p>
         
         <ul class="menu">
-            <li><a href="dashboard.php">🏠 Dashboard</a></li>
-
-            <?php if ($role === 'admin') : ?>
-                <li><a href="manage_users.php">👤 Manage Users</a></li>
-                <li><a href="manage_products.php">📦 Manage Products</a></li>
-                <li><a href="reports.php">📊 Reports</a></li>
-            <?php endif; ?>
-
-            <?php if ($role === 'manager') : ?>
-                <li><a href="reports.php">📊 Reports</a></li>
-                <li><a href="inventory.php">📦 Inventory</a></li>
-            <?php endif; ?>
-
-            <?php if ($role === 'cashier') : ?>
-                <li><a href="pos.php">💵 Point of Sale</a></li>
+            <li><a href="ENdashboard.php">🏠 Dashboard</a></li>
+            <?php if ($role === 'encoder') : ?>
+                <li><a href="inventory.php">📦 Inventory</a></li>            
             <?php endif; ?>
         </ul>
-
         <a href="logout.php" class="btn-logout">🚪 Logout</a>
     </div>
 

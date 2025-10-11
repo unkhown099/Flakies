@@ -1,11 +1,11 @@
 <?php
-require 'db_connect.php';
+require ('../config/db_connect.php');
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $username = trim($_POST['username']);
     $name = trim($_POST['name']);
     $password = password_hash($_POST['password'], PASSWORD_DEFAULT);
-    $role = 'cashier'; // default role, can be changed by admin
+    $role = trim($_POST['role']);
 
     // Insert new user
     $stmt = $conn->prepare("INSERT INTO staff (username, password, name, role) VALUES (?, ?, ?, ?)");
@@ -33,6 +33,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <p class="welcome">Create a new account</p>
 
             <form action="register.php" method="POST" class="login-form">
+                <div class="input-group">
+                    <input type="text" name="role" placeholder="Role" required>
+                </div>
                 <div class="input-group">
                     <input type="text" name="name" placeholder="Full Name" required>
                 </div>

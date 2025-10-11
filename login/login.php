@@ -30,7 +30,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             } elseif ($row['role'] === 'cashier') {
                 header("Location: pos.php");
             } elseif ($row['role'] === 'encoder') {
-                header("Location: inventory.php");
+                header("Location: ../encoder/ENdashboard.php");
             } elseif ($row['role'] === 'manager') {
                 header("Location: reports.php");
             } else {
