@@ -1,4 +1,5 @@
 <?php
+    include("../config/db_connect.php");
     session_start();
 
     // if not logged in, redirect to login
@@ -40,8 +41,35 @@
     </div>
 
     <section class="ENmain-content">
-        <h1>DASHBOARD</h1>
+        <h1>INVENTORY</h1>
         <p>Your role: <strong><?php echo ucfirst($role); ?></strong></p>
+        <?php
+            $sql = "SELECT * FROM products";
+            $query = mysqli_query($conn, $sql);
+        ?>
+        <table class="INtable">
+            <tr>
+                <th>Item ID</th>
+                <th>Product Name</th>
+                <th>Category</th>
+                <th>Price</th>
+                <th>Stock</th>
+                <th>Created at</th>
+            </tr>
+            <tr>
+                <?php while ($row = mysqli_fetch_assoc($query)) : ?>
+                <td><?php echo htmlspecialchars($row['id']); ?></td>
+                <td><?php echo htmlspecialchars($row['name']); ?></td>
+                <td><?php echo htmlspecialchars($row['category']); ?></td>
+                <td><?php echo htmlspecialchars($row['price']); ?></td>
+                <td><?php echo htmlspecialchars($row['stock']); ?></td>
+                <td><?php echo htmlspecialchars($row['created_at']); ?></td>
+                <?php endwhile; ?>
+            </tr>
+        </table>
+        <?php
+            mysqli_close($conn);
+        ?>
     </section>
 </body>
 </html>
