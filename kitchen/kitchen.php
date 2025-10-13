@@ -71,19 +71,19 @@ if ($result) {
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            background: linear-gradient(135deg, #f4e04d 0%, #d4a942 100%);
             min-height: 100vh;
             padding-bottom: 2rem;
         }
 
         nav {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
+            background: #2d2d2d;
+            color: #f4e04d;
             padding: 1.5rem 5%;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            box-shadow: 0 2px 20px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 20px rgba(0,0,0,0.3);
         }
 
         .logo {
@@ -109,10 +109,11 @@ if ($result) {
         }
 
         .stat-badge {
-            background: rgba(255, 255, 255, 0.2);
+            background: rgba(244, 224, 77, 0.3);
             padding: 0.5rem 1rem;
             border-radius: 20px;
             font-weight: 600;
+            color: #2d2d2d;
         }
 
         .container {
@@ -156,13 +157,13 @@ if ($result) {
         }
 
         .tab:hover {
-            border-color: #667eea;
-            color: #667eea;
+            border-color: #d4a942;
+            color: #d4a942;
         }
 
         .tab.active {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
+            background: linear-gradient(135deg, #f4e04d 0%, #d4a942 100%);
+            color: #2d2d2d;
             border-color: transparent;
         }
 
@@ -176,18 +177,18 @@ if ($result) {
             background: white;
             border-radius: 20px;
             padding: 1.5rem;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.15);
             transition: all 0.3s ease;
-            border-left: 5px solid #667eea;
+            border-left: 5px solid #d4a942;
         }
 
         .order-card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.15);
+            box-shadow: 0 10px 30px rgba(212, 169, 66, 0.3);
         }
 
         .order-card.preparing {
-            border-left-color: #feca57;
+            border-left-color: #f4e04d;
         }
 
         .order-card.ready {
