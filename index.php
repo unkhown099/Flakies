@@ -1,5 +1,5 @@
 <?php
-include("config/db_connect.php");   
+include("config/db_connect.php");
 
 // Fetch products dynamically
 $sql = "SELECT name, description, price, stock, image FROM products";
@@ -8,6 +8,7 @@ $result = $conn->query($sql);
 
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -47,10 +48,23 @@ $result = $conn->query($sql);
         }
 
         @keyframes float {
-            0%, 100% { transform: translate(0, 0) rotate(0deg); }
-            25% { transform: translate(50px, -30px) rotate(5deg); }
-            50% { transform: translate(0, -50px) rotate(-5deg); }
-            75% { transform: translate(-50px, -30px) rotate(5deg); }
+
+            0%,
+            100% {
+                transform: translate(0, 0) rotate(0deg);
+            }
+
+            25% {
+                transform: translate(50px, -30px) rotate(5deg);
+            }
+
+            50% {
+                transform: translate(0, -50px) rotate(-5deg);
+            }
+
+            75% {
+                transform: translate(-50px, -30px) rotate(5deg);
+            }
         }
 
         nav {
@@ -64,18 +78,35 @@ $result = $conn->query($sql);
             z-index: 1000;
             background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(10px);
-            box-shadow: 0 2px 20px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
         }
 
         .logo {
             font-size: 1.8rem;
             font-weight: 800;
             letter-spacing: -1px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #d9ed42ff 0%, #d39e2aff 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
         }
+
+        .logo {
+            display: flex;
+            align-items: center;
+        }
+
+        .logo img {
+            height: 45px;
+            /* make it smaller */
+            width: auto;
+            /* keep proportions */
+            border-radius: 8px;
+            /* optional: slight rounding */
+            margin-right: 10px;
+            /* space from text if you add one later */
+        }
+
 
         .nav-links {
             display: flex;
@@ -109,41 +140,145 @@ $result = $conn->query($sql);
             color: white;
         }
 
-        .hero-content {
-            text-align: center;
-            max-width: 900px;
-            padding: 2rem;
-            position: relative;
-            z-index: 1;
-            animation: fadeInUp 1s ease;
+        .hero {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-direction: row-reverse;
+            /* 👈 swaps sides */
+            padding: 6rem 8%;
+            background: linear-gradient(135deg, #d9ed42 0%, #d39e2a 60%, #e0d979ff 100%);
+            min-height: 100vh;
+            color: #2d2d2d;
+            overflow: hidden;
         }
 
-        @keyframes fadeInUp {
+
+        .hero-content {
+            flex: 1;
+            width: 600px;
+            animation: fadeInLeft 1.2s ease-out;
+            justify-content: end;
+        }
+
+        .hero-content h1 {
+            font-size: 7rem;
+            font-weight: 800;
+            line-height: 1.1;
+            color: #2d2d2d;
+            margin-bottom: 1.5rem;
+        }
+
+        .hero-content span {
+            color: #fff;
+            background: linear-gradient(135deg, #2d2d2d, #444);
+            padding: 0.3rem 0.8rem;
+            border-radius: 8px;
+        }
+
+        .hero-content p {
+            font-size: 2.0rem;
+            color: #4a4a4a;
+            margin-bottom: 2rem;
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .hero-buttons .btn {
+            padding: 0.9rem 2.2rem;
+            border: none;
+            border-radius: 50px;
+            font-size: 1rem;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .hero-buttons .btn-primary {
+            background: #2d2d2d;
+            color: white;
+        }
+
+        .hero-buttons .btn-primary:hover {
+            background: #444;
+            transform: translateY(-3px);
+        }
+
+        .hero-buttons .btn-secondary {
+            background: white;
+            color: #2d2d2d;
+            border: 2px solid #2d2d2d;
+        }
+
+        .hero-buttons .btn-secondary:hover {
+            background: #2d2d2d;
+            color: white;
+        }
+
+        .hero-image {
+            flex: 1;
+            display: flex;
+
+            animation: fadeInRight 1.2s ease-out;
+            margin-left: 80px;
+        }
+
+        .hero-image img {
+            width: 90%;
+            max-width: 600px;
+            border-radius: 50%;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+            border: 10px solid #fff;
+            object-fit: cover;
+
+        }
+
+        @keyframes fadeInLeft {
             from {
                 opacity: 0;
-                transform: translateY(30px);
+                transform: translateX(-50px);
             }
+
             to {
                 opacity: 1;
-                transform: translateY(0);
+                transform: translateX(0);
             }
         }
 
-        h1 {
-            font-size: 4.5rem;
-            font-weight: 800;
-            margin-bottom: 1.5rem;
-            line-height: 1.1;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+        @keyframes fadeInRight {
+            from {
+                opacity: 0;
+                transform: translateX(50px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
         }
 
-        .hero p {
-            font-size: 1.4rem;
-            margin-bottom: 2.5rem;
-            color: #4a5568;
+        @media (max-width: 900px) {
+            .hero {
+                flex-direction: column-reverse;
+                text-align: center;
+                padding: 4rem 5%;
+            }
+
+            .hero-content {
+                max-width: 100%;
+            }
+
+            .hero-image img {
+                max-width: 320px;
+                margin-bottom: 2rem;
+            }
+
+            .hero-content h1 {
+                font-size: 3rem;
+            }
         }
 
         .cta-buttons {
@@ -218,7 +353,7 @@ $result = $conn->query($sql);
             background: white;
             border-radius: 25px;
             overflow: hidden;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
             transition: all 0.3s ease;
         }
 
@@ -344,7 +479,8 @@ $result = $conn->query($sql);
                 font-size: 0.9rem;
             }
 
-            .products h2, .features h2 {
+            .products h2,
+            .features h2 {
                 font-size: 2.2rem;
             }
 
@@ -354,9 +490,12 @@ $result = $conn->query($sql);
         }
     </style>
 </head>
+
 <body>
     <nav>
-        <div class="logo">🌺 Flakies</div>
+        <div class="logo">
+            <img src="assets/pictures/45b0e7c9-8bc1-4ef3-bac2-cfc07174d613.png" alt="Flakies Logo"> Flakies
+        </div>
         <ul class="nav-links">
             <li><a href="#products">Menu</a></li>
             <li><a href="#features">About</a></li>
@@ -365,26 +504,29 @@ $result = $conn->query($sql);
         </ul>
     </nav>
 
-    <section class="hero">
+    <<section class="hero">
         <div class="hero-content">
             <h1><span>Flakies</span> — Sarap ng Pilipinas! 🇵🇭</h1>
-            <p>Bringing the authentic taste of Pastil and Halo-Halo straight to your table — a taste of Filipino comfort and tradition in every bite.</p>
+            <p>Bringing the best of Filipino street and home delicacies to your doorstep. Taste nostalgia, love, and warmth in every bite.</p>
             <div class="hero-buttons">
                 <button class="btn btn-primary">Order Now</button>
-                <button class="btn btn-secondary">View Full Menu</button>
+                <button class="btn btn-secondary">View Menu</button>
             </div>
         </div>
-    </section>
+        <div class="hero-image">
+            <img src="assets/pictures/45b0e7c9-8bc1-4ef3-bac2-cfc07174d613.png" alt="Flakies Featured Dish">
+        </div>
+        </section>
 
-    <section class="products" id="products">
-    <h2>Our Specialties</h2>
-    <p class="products-subtitle">Handcrafted with love, delivered with care</p>
+        <section class="products" id="products">
+            <h2>Our Specialties</h2>
+            <p class="products-subtitle">Handcrafted with love, delivered with care</p>
 
-    <div class="products-grid">
-        <?php
-        if ($result->num_rows > 0) {
-            while($row = $result->fetch_assoc()) {
-                echo "
+            <div class="products-grid">
+                <?php
+                if ($result->num_rows > 0) {
+                    while ($row = $result->fetch_assoc()) {
+                        echo "
                 <div class='product-card'>
                     <div class='product-image'>";
                         if (!empty($row['image'])) {
@@ -392,7 +534,7 @@ $result = $conn->query($sql);
                         } else {
                             echo "🍴"; // fallback emoji
                         }
-                echo "</div>
+                        echo "</div>
                     <div class='product-info'>
                         <h3>{$row['name']}</h3>
                         <p>{$row['description']}</p>
@@ -401,46 +543,47 @@ $result = $conn->query($sql);
                         <button class='order-btn'>Add to Cart</button>
                     </div>
                 </div>";
-            }
-        } else {
-            echo "<p style='text-align:center;'>No products available yet.</p>";
-        }
-        ?>
-    </div>
-</section>
-
-    <section class="features" id="features">
-        <h2>Why Choose Flakies?</h2>
-        
-        <div class="features-grid">
-            <div class="feature-item">
-                <div class="feature-icon">✨</div>
-                <h3>Authentic Flavors</h3>
-                <p>Traditional recipes passed down through generations</p>
+                    }
+                } else {
+                    echo "<p style='text-align:center;'>No products available yet.</p>";
+                }
+                ?>
             </div>
+        </section>
 
-            <div class="feature-item">
-                <div class="feature-icon">🚚</div>
-                <h3>Fresh Delivery</h3>
-                <p>Same-day delivery to keep everything fresh and delicious</p>
+        <section class="features" id="features">
+            <h2>Why Choose Flakies?</h2>
+
+            <div class="features-grid">
+                <div class="feature-item">
+                    <div class="feature-icon">✨</div>
+                    <h3>Authentic Flavors</h3>
+                    <p>Traditional recipes passed down through generations</p>
+                </div>
+
+                <div class="feature-item">
+                    <div class="feature-icon">🚚</div>
+                    <h3>Fresh Delivery</h3>
+                    <p>Same-day delivery to keep everything fresh and delicious</p>
+                </div>
+
+                <div class="feature-item">
+                    <div class="feature-icon">💯</div>
+                    <h3>Quality Assured</h3>
+                    <p>Premium ingredients and strict hygiene standards</p>
+                </div>
+
+                <div class="feature-item">
+                    <div class="feature-icon">💝</div>
+                    <h3>Made with Love</h3>
+                    <p>Every order is prepared with care and attention</p>
+                </div>
             </div>
+        </section>
 
-            <div class="feature-item">
-                <div class="feature-icon">💯</div>
-                <h3>Quality Assured</h3>
-                <p>Premium ingredients and strict hygiene standards</p>
-            </div>
-
-            <div class="feature-item">
-                <div class="feature-icon">💝</div>
-                <h3>Made with Love</h3>
-                <p>Every order is prepared with care and attention</p>
-            </div>
-        </div>
-    </section>
-
-    <footer>
-        <p>&copy; 2025 Flakies. All rights reserved. Bringing authentic Filipino flavors to your table. 🇵🇭</p>
-    </footer>
+        <footer>
+            <p>&copy; 2025 Flakies. All rights reserved. Bringing authentic Filipino flavors to your table. 🇵🇭</p>
+        </footer>
 </body>
+
 </html>
