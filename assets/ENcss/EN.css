@@ -6,21 +6,20 @@ body {
 }
 
 .ENsidebar {
-    width: 250px;
+    width: auto;
+    height: 99vh; 
     background: #2d2d2d;
     color: #fff;
     padding: 20px;
-    display: flex;
     flex-direction: column;
+    position: fixed;
 }
-
 .ENsidebar .logo {
     text-align: center;
     justify-content: center;
     display: flex;
     margin-top: 10px;
 }
-
 .ENsidebar .welcome {
     text-align: center;
     font-size: 20px;
@@ -42,11 +41,9 @@ body {
     padding: 0;
     flex-grow: 1;
 }
-
 .ENmenu li {
     margin: 10px 0;
 }
-
 .ENmenu a {
     text-decoration: none;
     color: #fff;
@@ -55,7 +52,6 @@ body {
     border-radius: 8px;
     transition: background 0.3s;
 }
-
 .ENmenu a:hover {
     background: rgba(255, 255, 255, 0.2);
 }
@@ -69,7 +65,6 @@ body {
     text-decoration: none;
     transition: background 0.3s;
 }
-
 .ENbtn-logout:hover {
     background: #e60000;
 }
@@ -78,22 +73,204 @@ body {
     flex-grow: 1;
     padding: 30px;
     background: linear-gradient(135deg, #d9ed42 0%, #d39e2a 60%, #e0d979ff 100%);
+    margin-left: 209px;
+    padding: 20px;
 }
-
 .ENmain-content .INtable {
     text-align: center;
-    margin: auto;
-    border-radius: 10px;
+    overflow-x: auto;
+    max-width: 100%;
+    width: 100%;
+    table-layout: fixed;
+    word-wrap: break-word;
 }
 
-.INtable th,
 .INtable td {
     color: white;
-    padding-left: 100px;
-    padding-right: 100px;
-
+    padding-left: 12px;
+    padding-right: 12px;
 }
-
 .INtable tr {
     background-color: #2d2d2d;
+}
+.INtable th {
+    color: white;
+    padding-top: 5px;
+    padding-bottom: 5px;
+}
+
+.ENbtn-container {
+    font-weight: bold;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+.ENbtn-container .ENadd-btn {
+    background-color: #2d2d2d;
+    color: white;
+    display: inline-flex;
+    padding-left: 15px;
+    padding-right: 15px;
+    border-radius: 30px;
+    margin-bottom: 5px;
+}
+.ENbtn-container .ENadd-btn:hover {
+    background-color: #d9ed42;
+    color: #2d2d2d;
+    cursor: pointer;
+}
+.ENbtn-container .ENSearch-Text {
+    font-size: 20px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    border-radius: 30px;
+    padding-left: 15px;
+}
+
+.ENmodal {
+  display: none;
+  position: fixed;
+  z-index: 1000;
+  left: 0; top: 0;
+  width: 100%; height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+}
+.ENmodal-content {
+  background-color: #fff;
+  margin: 10% auto;
+  padding: 20px;
+  width: 400px;
+  border-radius: 5px;
+  position: relative;
+}
+.ENmodal .close-btn {
+  position: absolute;
+  top: 10px; right: 15px;
+  font-size: 24px;
+  cursor: pointer;
+}
+
+/* ========== Responsive Styles ========== */
+@media (max-width: 768px) {
+    /* Collapse sidebar on small screens */
+    .ENsidebar {
+        width: 100%;
+        height: auto;
+        position: relative;
+        flex-direction: row;
+        flex-wrap: wrap;
+        padding: 10px;
+        justify-content: space-between;
+    }
+
+    .ENsidebar .logo {
+        margin: 0 auto;
+    }
+
+    .ENsidebar .welcome {
+        font-size: 0.9rem;
+        text-align: center;
+        flex: 1 100%;
+        margin-top: 10px;
+    }
+
+    .ENmenu {
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    .ENmenu li {
+        margin: 5px;
+    }
+
+    .ENbtn-logout {
+        margin-top: 10px;
+    }
+
+    .ENmain-content {
+        margin-left: 0;
+        margin-top: 10px;
+        padding: 15px;
+    }
+
+    .INtable th,
+    .INtable td {
+        padding: 0.5rem;
+        font-size: 0.9rem;
+    }
+
+    .INtable {
+        width: 100%;
+        overflow-x: auto;
+    }
+    .ENbtn-container {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+    }
+
+    .ENbtn-container .ENadd-btn {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .ENbtn-container .ENSearch-Text {
+        width: 100%;
+    }
+
+    .ENmodal-content {
+        width: 90%;
+        margin-top: 20%;
+    }
+}
+
+@media (max-width: 480px) {
+    .ENsidebar {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .ENmenu {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .ENmenu a {
+        font-size: 0.9rem;
+        padding: 8px;
+    }
+
+    .ENbtn-logout {
+        width: 100%;
+    }
+
+    .ENmain-content {
+        padding: 10px;
+    }
+
+    .INtable th,
+    .INtable td {
+        padding: 0.3rem;
+        font-size: 0.8rem;
+    }
+    .ENbtn-container .ENadd-btn {
+        font-size: 0.9rem;
+        padding: 10px;
+    }
+
+    .ENSearch-Text {
+        font-size: 1rem;
+    }
+
+    .ENmodal-content {
+        padding: 15px;
+        margin-top: 25%;
+    }
+
+    .ENmodal-content input,
+    .ENmodal-content textarea,
+    .ENmodal-content button {
+        font-size: 1rem;
+    }
 }
