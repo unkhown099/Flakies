@@ -16,25 +16,33 @@
 <head>
     <meta charset="UTF-8">
     <title>Flakies | Dashboard</title>
-    <link rel="stylesheet" href="../assets/dashboard.css">
+    <link rel="stylesheet" href="../assets/ENcss/EN.css">
 </head>
 <body>
-    <div class="sidebar">
-        <h2 class="logo">Flakies</h2>
+    <div class="ENsidebar">
+        <div class="logo">
+            <img src="..\assets\pictures\45b0e7c9-8bc1-4ef3-bac2-cfc07174d613.png" alt="Flakies Logo" >
+        </div>
         <p class="welcome">Welcome, <?php echo htmlspecialchars($username); ?>!</p>
-        
-        <ul class="menu">
-            <li><a href="ENdashboard.php">🏠 Dashboard</a></li>
+
+        <ul class="ENmenu">
+            <li>
+                <a href="ENdashboard.php">🏠 Dashboard</a>
+            </li>
             <?php if ($role === 'encoder') : ?>
-                <li><a href="inventory.php">📦 Inventory</a></li>            
+            <li>
+                <a href="ENinventory.php">📦 Inventory</a>
+            </li>            
             <?php endif; ?>
+            <li>
+                <a href="logout.php" class="ENbtn-logout">🚪 Logout</a>
+            </li>
         </ul>
-        <a href="logout.php" class="btn-logout">🚪 Logout</a>
     </div>
 
-    <div class="main-content">
-        <h1>Dashboard</h1>
+    <section class="ENmain-content">
+        <h1>DASHBOARD</h1>
         <p>Your role: <strong><?php echo ucfirst($role); ?></strong></p>
-    </div>
+    </section>
 </body>
 </html>

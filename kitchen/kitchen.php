@@ -4,22 +4,6 @@
 // Include database connection
 require_once '../config/db_connect.php';
 
-// Handle order status updates
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
-    $orderId = $conn->real_escape_string($_POST['order_id']);
-    
-    if ($_POST['action'] === 'accept') {
-        $conn->query("UPDATE orders SET status = 'preparing' WHERE id = $orderId");
-    } elseif ($_POST['action'] === 'ready') {
-        $conn->query("UPDATE orders SET status = 'ready' WHERE id = $orderId");
-    } elseif ($_POST['action'] === 'complete') {
-        $conn->query("UPDATE orders SET status = 'completed' WHERE id = $orderId");
-    }
-    
-    header('Location: kitchen.php');
-    exit;
-}
-
 // Fetch active orders
 $result = $conn->query("CALL GetActiveOrders()");
 $orders = [];
@@ -71,19 +55,19 @@ if ($result) {
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            background: linear-gradient(135deg, #f4e04d 0%, #d4a942 100%);
             min-height: 100vh;
             padding-bottom: 2rem;
         }
 
         nav {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
+            background: #2d2d2d;
+            color: #f4e04d;
             padding: 1.5rem 5%;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            box-shadow: 0 2px 20px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 20px rgba(0,0,0,0.3);
         }
 
         .logo {
@@ -109,10 +93,11 @@ if ($result) {
         }
 
         .stat-badge {
-            background: rgba(255, 255, 255, 0.2);
+            background: rgba(244, 224, 77, 0.3);
             padding: 0.5rem 1rem;
             border-radius: 20px;
             font-weight: 600;
+            color: #2d2d2d;
         }
 
         .container {
@@ -156,13 +141,13 @@ if ($result) {
         }
 
         .tab:hover {
-            border-color: #667eea;
-            color: #667eea;
+            border-color: #d4a942;
+            color: #d4a942;
         }
 
         .tab.active {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
+            background: linear-gradient(135deg, #f4e04d 0%, #d4a942 100%);
+            color: #2d2d2d;
             border-color: transparent;
         }
 
@@ -176,18 +161,18 @@ if ($result) {
             background: white;
             border-radius: 20px;
             padding: 1.5rem;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.15);
             transition: all 0.3s ease;
-            border-left: 5px solid #667eea;
+            border-left: 5px solid #d4a942;
         }
 
         .order-card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.15);
+            box-shadow: 0 10px 30px rgba(212, 169, 66, 0.3);
         }
 
         .order-card.preparing {
-            border-left-color: #feca57;
+            border-left-color: #f4e04d;
         }
 
         .order-card.ready {
@@ -467,22 +452,21 @@ if ($result) {
                         </div>
 
                         <div class="order-actions">
-                            <form method="POST" style="flex: 1;">
-                                <input type="hidden" name="order_id" value="<?php echo $order['id']; ?>">
+                            <div class="order-actions">
                                 <?php if ($order['status'] === 'new'): ?>
-                                    <button type="submit" name="action" value="accept" class="action-btn btn-accept">
+                                    <button class="action-btn btn-accept updateStatus" data-id="<?php echo $order['id']; ?>" data-status="preparing">
                                         Accept Order
                                     </button>
                                 <?php elseif ($order['status'] === 'preparing'): ?>
-                                    <button type="submit" name="action" value="ready" class="action-btn btn-ready">
+                                    <button class="action-btn btn-ready updateStatus" data-id="<?php echo $order['id']; ?>" data-status="ready">
                                         Mark as Ready
                                     </button>
                                 <?php elseif ($order['status'] === 'ready'): ?>
-                                    <button type="submit" name="action" value="complete" class="action-btn btn-complete">
+                                    <button class="action-btn btn-complete updateStatus" data-id="<?php echo $order['id']; ?>" data-status="completed">
                                         Complete Order
                                     </button>
                                 <?php endif; ?>
-                            </form>
+                            </div>
                         </div>
                     </div>
                 <?php endforeach; ?>
@@ -509,5 +493,45 @@ if ($result) {
             location.reload();
         }, 30000);
     </script>
+    <script>
+        document.addEventListener('click', function(e) {
+        if (e.target.classList.contains('updateStatus')) {
+            const id = e.target.dataset.id;
+            const status = e.target.dataset.status;
+
+            fetch('update_status.php', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+            body: `id=${id}&status=${status}`
+            })
+            .then(res => res.text())
+            .then(msg => {
+            alert(msg);
+            location.reload();
+            })
+            .catch(() => alert('Failed to update order status.'));
+        }
+        });
+    </script>
+    <script>
+    function updateStatus(orderId, action) {
+        fetch('update_status.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: `order_id=${orderId}&action=${action}`
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Reload the page or dynamically update the status
+                alert('Order updated to ' + action + '!');
+                location.reload(); 
+            } else {
+                alert('Failed to update order.');
+            }
+        })
+        .catch(error => console.error('Error:', error));
+    }
+</script>
 </body>
 </html>

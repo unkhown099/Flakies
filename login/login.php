@@ -26,7 +26,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
             // Redirect based on role
             if ($row['role'] === 'admin') {
-                header("Location: ../manager/dashboard.php");
+                header("Location: ../admin/dashboard.php");
             } elseif ($row['role'] === 'cashier') {
                 header("Location: pos.php");
             } elseif ($row['role'] === 'encoder') {
@@ -47,6 +47,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 ?>
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <title>Flakies | Login</title>
@@ -61,11 +62,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             font-size: 14px;
             color: #666;
         }
+
         .input-group {
             position: relative;
         }
     </style>
 </head>
+
 <body>
     <div class="login-hero">
         <div class="login-card">
@@ -113,4 +116,5 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         }
     </script>
 </body>
+
 </html>

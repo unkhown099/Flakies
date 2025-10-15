@@ -5,19 +5,105 @@ body {
     height: 100vh;
 }
 
-.sidebar {
-    width: 250px;
-    background: linear-gradient(135deg, #6a11cb, #2575fc);
-    color: #fff;
-    padding: 20px;
-    display: flex;
-    flex-direction: column;
+ /* SIDEBAR */
+        .sidebar {
+            width: 260px;
+            background: linear-gradient(180deg, #d9ed42 0%, #d39e2a 60%, #e0d979ff 100%);
+            color: #000;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: flex-start;
+            padding: 25px 20px;
+            box-shadow: 4px 0 20px rgba(0, 0, 0, 0.1);
+            border-top-right-radius: 20px;
+            position: fixed;
+            top: 0;
+            bottom: 0;
+        }
+
+        .sidebar .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 26px;
+            font-weight: 800;
+            margin-bottom: 8px;
+        }
+
+        .sidebar .logo img {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+
+        .sidebar .welcome {
+            font-size: 14px;
+            color: rgba(0, 0, 0, 0.7);
+            margin-bottom: 25px;
+            font-weight: 500;
+        }
+
+        .menu {
+            list-style: none;
+            width: 100%;
+            padding: 0;
+        }
+
+        .menu li {
+            margin: 8px 0;
+        }
+
+        .menu a {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+            color: #000;
+            font-weight: 600;
+            padding: 12px 18px;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .menu a:hover,
+        .menu a.active {
+            background: rgba(0, 0, 0, 0.1);
+            color: #000;
+            transform: translateX(4px);
+        }
+
+        .btn-logout {
+            margin-top: auto;
+            background: #000;
+            color: #fff;
+            padding: 10px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            display: inline-block;
+            /* prevents stretching */
+            text-align: center;
+            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15);
+        }
+
+        .btn-logout:hover {
+            background: #333;
+            transform: translateY(-2px);
+        }
+
+
+.sidebar .welcome {
+    text-align: center;
+    font-size: 20px;
 }
 
-.logo {
-    font-size: 24px;
-    font-weight: bold;
-    margin-bottom: 10px;
+.logo img {
+    width: 100px;
+    height: 100px;
 }
 
 .welcome {
