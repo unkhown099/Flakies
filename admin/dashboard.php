@@ -65,11 +65,18 @@ $formatted_periods = array_map(function ($p) use ($group_by) {
 
 <!DOCTYPE html>
 <html lang="en">
+<<<<<<< HEAD
 
 <head>
     <meta charset="UTF-8">
     <title>Flakies | Analytics</title>
     <link rel="icon" type="image/x-icon" href="C:\xampp\htdocs\Flakies\assets\pictures\45b0e7c9-8bc1-4ef3-bac2-cfc07174d613.png">
+=======
+<head>
+    <meta charset="UTF-8">
+    <title>Flakies | Analytics</title>
+    <link rel="icon" type="image/x-icon" href="GEPOLEO-LOGO-FLAKIES-CIRCLE.png">
+>>>>>>> origin/master
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <style>
@@ -78,6 +85,7 @@ $formatted_periods = array_map(function ($p) use ($group_by) {
             height: 100vh;
             margin: 0;
             font-family: "Poppins", sans-serif;
+<<<<<<< HEAD
             background: #f7f8fa;
             color: #222;
         }
@@ -138,10 +146,38 @@ $formatted_periods = array_map(function ($p) use ($group_by) {
         }
 
         /* MENU LINKS */
+=======
+            background: #f6f7fb;
+        }
+
+        /* Sidebar (copied from dashboard.php — do not modify) */
+        .sidebar {
+            width: 250px;
+            background: linear-gradient(180deg, #6b4226, #4e2d12);
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 25px 0;
+            box-shadow: 4px 0 15px rgba(0, 0, 0, 0.1);
+            border-top-right-radius: 20px;
+        }
+        .logo {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+        .welcome {
+            font-size: 14px;
+            color: #e5d1b8;
+            margin-bottom: 20px;
+        }
+>>>>>>> origin/master
         .menu {
             list-style: none;
             width: 100%;
             padding: 0;
+<<<<<<< HEAD
             margin: 0;
             display: flex;
             flex-direction: column;
@@ -290,10 +326,58 @@ $formatted_periods = array_map(function ($p) use ($group_by) {
             border-radius: 10px;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
             display: inline-block;
+=======
+        }
+        .menu li {
+            margin: 10px 0;
+        }
+        .menu a {
+            display: block;
+            text-decoration: none;
+            color: #fff;
+            font-weight: 600;
+            padding: 12px 20px;
+            transition: all 0.3s;
+            border-left: 4px solid transparent;
+        }
+        .menu a:hover {
+            background: rgba(255,255,255,0.1);
+            border-left: 4px solid #e5d1b8;
+            color: #e5d1b8;
+        }
+        .btn-logout {
+            margin-top: auto;
+            padding: 10px 20px;
+            background: white;
+            color: #4e2d12;
+            border-radius: 6px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: 0.3s;
+        }
+        .btn-logout:hover {
+            background: #f4e3d1;
+        }
+
+        /* Main content */
+        .main-content {
+            flex-grow: 1;
+            padding: 40px;
+        }
+
+        h1 {
+            color: #4e2d12;
+            margin-bottom: 20px;
+        }
+
+        .filter-container {
+            margin-bottom: 25px;
+>>>>>>> origin/master
         }
 
         .filter-container label {
             font-size: 16px;
+<<<<<<< HEAD
             font-weight: 500;
             color: #000;
         }
@@ -350,12 +434,32 @@ $formatted_periods = array_map(function ($p) use ($group_by) {
             padding: 25px;
             border-radius: 12px;
             box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+=======
+            color: #4e2d12;
+            font-weight: 500;
+            margin-right: 10px;
+        }
+
+        .filter-container select {
+            padding: 8px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            font-size: 16px;
+        }
+
+        .chart-card {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+>>>>>>> origin/master
         }
     </style>
 </head>
 
 <body>
     <!-- Sidebar -->
+<<<<<<< HEAD
 
     <div class="sidebar">
         <div class="logo">
@@ -370,6 +474,19 @@ $formatted_periods = array_map(function ($p) use ($group_by) {
                 <li><a href="manage_products.php">📦 Manage Products</a></li>
                 <li><a href="manage_report.php">📊 Reports</a></li>
             <?php elseif ($role === 'manager'): ?>
+=======
+    <div class="sidebar">
+        <h2 class="logo">Flakies</h2>
+        <p class="welcome">Welcome, <?= htmlspecialchars($username); ?>!</p>
+        <ul class="menu">
+            <li><a href="dashboard.php">🏠 Dashboard</a></li>
+            <?php if ($role === 'admin'): ?>
+                <li><a href="manage_users.php">👤 Manage Users</a></li>
+                <li><a href="manage_products.php">📦 Manage Products</a></li>
+                <li><a href="manage_report.php">📊 Reports</a></li>
+            <?php elseif ($role === 'manager'): ?>
+
+>>>>>>> origin/master
                 <li><a href="reports.php">📊 Reports</a></li>
             <?php elseif ($role === 'cashier'): ?>
                 <li><a href="cashier/pos.php">💵 Point of Sale</a></li>
@@ -380,8 +497,11 @@ $formatted_periods = array_map(function ($p) use ($group_by) {
         <a href="../login/logout.php" class="btn-logout">🚪 Logout</a>
     </div>
 
+<<<<<<< HEAD
 
 
+=======
+>>>>>>> origin/master
     <!-- Main Content -->
     <div class="main-content">
         <h1>📈 Sales Analytics</h1>
@@ -397,6 +517,7 @@ $formatted_periods = array_map(function ($p) use ($group_by) {
             </form>
         </div>
 
+<<<<<<< HEAD
         <div class="dashboard-cards">
             <div class="card">
                 <h3>Daily Sales</h3>
@@ -415,6 +536,8 @@ $formatted_periods = array_map(function ($p) use ($group_by) {
             </div>
         </div>
 
+=======
+>>>>>>> origin/master
         <div class="chart-card">
             <canvas id="salesChart"></canvas>
         </div>
@@ -437,6 +560,7 @@ $formatted_periods = array_map(function ($p) use ($group_by) {
             options: {
                 responsive: true,
                 scales: {
+<<<<<<< HEAD
                     y: {
                         beginAtZero: true
                     }
@@ -445,10 +569,20 @@ $formatted_periods = array_map(function ($p) use ($group_by) {
                     legend: {
                         display: false
                     }
+=======
+                    y: { beginAtZero: true }
+                },
+                plugins: {
+                    legend: { display: false }
+>>>>>>> origin/master
                 }
             }
         });
     </script>
 </body>
+<<<<<<< HEAD
 
 </html>
+=======
+</html>
+>>>>>>> origin/master
