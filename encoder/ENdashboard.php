@@ -34,9 +34,10 @@
                 <a href="ENinventory.php">📦 Inventory</a>
             </li>            
             <?php endif; ?>
+            <li>
+                <a href="logout.php" class="ENbtn-logout">🚪 Logout</a>
+            </li>
         </ul>
-
-        <a href="logout.php" class="ENbtn-logout">🚪 Logout</a>
     </div>
 
     <section class="ENmain-content">
