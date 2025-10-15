@@ -1,6 +1,6 @@
 <?php
 $servername = "127.0.0.1"; // safer than 'localhost' for custom ports
-$username   = "xampp";
+$username   = "root";
 $password   = "";
 $dbname     = "flakies";
 $port       = 3306; // XAMPP MySQL port

@@ -4,22 +4,6 @@
 // Include database connection
 require_once '../config/db_connect.php';
 
-// Handle order status updates
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
-    $orderId = $conn->real_escape_string($_POST['order_id']);
-    
-    if ($_POST['action'] === 'accept') {
-        $conn->query("UPDATE orders SET status = 'preparing' WHERE id = $orderId");
-    } elseif ($_POST['action'] === 'ready') {
-        $conn->query("UPDATE orders SET status = 'ready' WHERE id = $orderId");
-    } elseif ($_POST['action'] === 'complete') {
-        $conn->query("UPDATE orders SET status = 'completed' WHERE id = $orderId");
-    }
-    
-    header('Location: kitchen.php');
-    exit;
-}
-
 // Fetch active orders
 $result = $conn->query("CALL GetActiveOrders()");
 $orders = [];
@@ -468,22 +452,21 @@ if ($result) {
                         </div>
 
                         <div class="order-actions">
-                            <form method="POST" style="flex: 1;">
-                                <input type="hidden" name="order_id" value="<?php echo $order['id']; ?>">
+                            <div class="order-actions">
                                 <?php if ($order['status'] === 'new'): ?>
-                                    <button type="submit" name="action" value="accept" class="action-btn btn-accept">
+                                    <button class="action-btn btn-accept updateStatus" data-id="<?php echo $order['id']; ?>" data-status="preparing">
                                         Accept Order
                                     </button>
                                 <?php elseif ($order['status'] === 'preparing'): ?>
-                                    <button type="submit" name="action" value="ready" class="action-btn btn-ready">
+                                    <button class="action-btn btn-ready updateStatus" data-id="<?php echo $order['id']; ?>" data-status="ready">
                                         Mark as Ready
                                     </button>
                                 <?php elseif ($order['status'] === 'ready'): ?>
-                                    <button type="submit" name="action" value="complete" class="action-btn btn-complete">
+                                    <button class="action-btn btn-complete updateStatus" data-id="<?php echo $order['id']; ?>" data-status="completed">
                                         Complete Order
                                     </button>
                                 <?php endif; ?>
-                            </form>
+                            </div>
                         </div>
                     </div>
                 <?php endforeach; ?>
@@ -510,5 +493,45 @@ if ($result) {
             location.reload();
         }, 30000);
     </script>
+    <script>
+        document.addEventListener('click', function(e) {
+        if (e.target.classList.contains('updateStatus')) {
+            const id = e.target.dataset.id;
+            const status = e.target.dataset.status;
+
+            fetch('update_status.php', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+            body: `id=${id}&status=${status}`
+            })
+            .then(res => res.text())
+            .then(msg => {
+            alert(msg);
+            location.reload();
+            })
+            .catch(() => alert('Failed to update order status.'));
+        }
+        });
+    </script>
+    <script>
+    function updateStatus(orderId, action) {
+        fetch('update_status.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: `order_id=${orderId}&action=${action}`
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Reload the page or dynamically update the status
+                alert('Order updated to ' + action + '!');
+                location.reload(); 
+            } else {
+                alert('Failed to update order.');
+            }
+        })
+        .catch(error => console.error('Error:', error));
+    }
+</script>
 </body>
 </html>
