@@ -20,10 +20,11 @@
     if (mysqli_num_rows($query2) > 0) {
         while ($row = mysqli_fetch_assoc($query2)) {
             echo "<tr>";
-            echo "<td>" . htmlspecialchars($row['name']) . "</td>";
-            echo "<td>" . htmlspecialchars($row['price']) . "₱</td>";
-            echo "<td>" . htmlspecialchars($row['stock']) . "</td>";
-            echo "<td>" . htmlspecialchars($row['created_at']) . "</td>";
+            echo '<td class="table-data">' . htmlspecialchars($row['name']) . "</td>";
+            echo '<td class="table-data">' . htmlspecialchars($row['price']) . "₱</td>";
+            echo '<td class="table-data">' . htmlspecialchars($row['stock']) . "</td>";
+            echo '<td class="table-data">' . htmlspecialchars($row['created_at']) . "</td>";
+            echo '<td class="INENdel-btn-container"><button class="INENdel-btn">Delete</button></td>';
             echo "</tr>";
         }
     } 
