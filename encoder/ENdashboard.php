@@ -62,8 +62,9 @@
             </div>
         </div>
         
+        <h3 class="DENtable-title">LOW STOCK PRODUCTS</h3>
+
         <div class="DENtable-wrapper">
-            <h3>LOW STOCK PRODUCTS</h3>
             <table class="DENtable">
                 <thead>
                     <tr>
@@ -77,6 +78,36 @@
                 <tbody id="productTableBody">
                     <?php
                         $sql1 = "SELECT * FROM products WHERE stock <= 10";
+                        $query1 = mysqli_query($conn, $sql1);
+                    ?>
+                    <?php while ($row = mysqli_fetch_assoc($query1)) : ?>
+                    <tr>
+                        <td class="DENtable-data"><?php echo ($row['name']); ?></td>
+                        <td class="DENtable-data"><?php echo ($row['price']); ?>₱</td>
+                        <td class="DENtable-data"><?php echo ($row['stock']); ?></td>
+                        <td class="DENtable-data"><?php echo ($row['created_at']); ?></td>
+                    </tr>
+                    <?php endwhile; ?>
+                </tbody>
+            </table>
+        </div>
+
+        <h3 class="DENtable-title">10 NEW PRODUCTS</h3>
+
+        <div class="DENtable-wrapper">
+            <table class="DENtable">
+                <thead>
+                    <tr>
+                        <th class="DENtable-header">Product Name</th>
+                        <th class="DENtable-header">Price</th>
+                        <th class="DENtable-header">Stock</th>
+                        <th class="DENtable-header">Created at</th>
+                    </tr>
+                </thead>
+
+                <tbody id="productTableBody">
+                    <?php
+                        $sql1 = "SELECT * FROM products LIMIT 10";
                         $query1 = mysqli_query($conn, $sql1);
                     ?>
                     <?php while ($row = mysqli_fetch_assoc($query1)) : ?>
