@@ -77,7 +77,7 @@ body {
     background: linear-gradient(135deg, #d9ed42 0%, #d39e2a 60%, #e0d979ff 100%);
     margin-left: 209px;
     padding: 20px;
-    overflow-y: hidden;
+    overflow-y: auto;
 }
 .ENmain-content .INENtable {
     text-align: center;
@@ -319,9 +319,12 @@ body {
     background-color: #fff;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
     border-radius: 20px;
-    max-height: 400px;
+    max-height: 350px;
     overflow-y: auto;
     word-wrap: break-word;
+    text-align: center;
+}
+.ENmain-content .DENtable-title {
     text-align: center;
 }
 
