@@ -1,14 +1,15 @@
 <?php
-$servername = "127.0.0.1"; // safer than 'localhost' for custom ports
-$username   = "root";
-$password   = "";
-$dbname     = "flakies";
-$port       = 3306; // XAMPP MySQL port
+    $servername = "127.0.0.1";
+    $connport = "3306";
+    $username = "xampp";
+    $password = "";
+    $database = "flakies";
 
-// Create connection
-$conn = new mysqli($servername, $username, $password, $dbname, $port);
+    // Create connection
+    $conn = mysqli_connect($servername, $username, $password, $database, $connport);
 
-// Check connection
-if ($conn->connect_errno) {
-    die("Connection failed: " . $conn->connect_error);
-}
+    // Check connection
+    if (!$conn) {
+        die("Connection failed: " . mysqli_connect_error());
+    }
+?>
