@@ -152,17 +152,21 @@ $result = $conn->query($sql);
         }
 
         .cart-btn {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
+            background: #2d2d2d;
+            color: #f4e04d;
             padding: 0.6rem 1.5rem;
             border-radius: 50px;
             font-weight: 600;
+            text-decoration: none;
             transition: transform 0.3s;
+            border: 2px solid #f4e04d;
+            cursor: pointer;
         }
 
         .cart-btn:hover {
             transform: scale(1.05);
-            color: white;
+            background: #f4e04d;
+            color: #2d2d2d;
         }
 
         .hero {

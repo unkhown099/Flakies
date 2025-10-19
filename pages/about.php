@@ -1,5 +1,5 @@
 <?php
-// about.php - Flakies About Page
+session_start();
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -91,19 +91,21 @@
         }
 
         .cart-btn {
-            background: linear-gradient(135deg, #f4e04d 0%, #d4a942 100%);
-            color: #2d2d2d;
+            background: #2d2d2d;
+            color: #f4e04d;
             padding: 0.6rem 1.5rem;
             border-radius: 50px;
             font-weight: 600;
             text-decoration: none;
             transition: transform 0.3s;
-            border: none;
+            border: 2px solid #f4e04d;
             cursor: pointer;
         }
 
         .cart-btn:hover {
             transform: scale(1.05);
+            background: #f4e04d;
+            color: #2d2d2d;
         }
 
         .container {
@@ -366,8 +368,14 @@
             <li><a href="../index.php">Home</a></li>
             <li><a href="./menu.php">Menu</a></li>
             <li><a href="./contact.php">Contact</a></li>
-            <li><a href="../login/login.php" class="auth-btn login-btn">Login</a></li>
-            <li><a href="../login/register.php" class="auth-btn register-btn">Register</a></li>
+
+            <?php if (isset($_SESSION['customer_id'])): ?>
+                <li><a href="./cart.php" class="auth-btn cart-btn">My Cart</a></li>
+                <li><a href="login/logout.php" class="auth-btn login-btn">Logout</a></li>
+            <?php else: ?>
+                <li><a href="login/login.php" class="auth-btn login-btn">Login</a></li>
+                <li><a href="login/register.php" class="auth-btn register-btn">Register</a></li>
+            <?php endif; ?>
         </ul>
     </nav>
 
