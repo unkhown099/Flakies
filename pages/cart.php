@@ -3,10 +3,8 @@ require_once '../config/db_connect.php';
 
 // Get or create customer session
 session_start();
-if (!isset($_SESSION['customer_id'])) {
-    // For now, use a default customer ID or redirect to login
-    $_SESSION['customer_id'] = 1; // TODO: Implement proper customer login
-}
+// Get customer ID if logged in
+$customer_id = $_SESSION['customer_id'] ?? null;
 
 $customer_id = $_SESSION['customer_id'];
 $message = '';
@@ -474,7 +472,7 @@ $finalTotal = $total + $deliveryFee;
             <li><a href="about.php">About</a></li>
             <li><a href="contact.php">Contact</a></li>
             <li><button class="cart-btn">🛒 Cart (<?php echo count($cartItems); ?>)</button></li>
-            <li><a href="login/logout.php" class="auth-btn login-btn">Logout</a></li>
+            <li><a href="../login/logout.php" class="auth-btn login-btn">Logout</a></li>
         </ul>
     </nav>
 

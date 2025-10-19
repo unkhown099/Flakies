@@ -1,6 +1,7 @@
 <?php
-    session_start();
-    session_destroy();
-    header("Location: ../login/login.php");
-    exit();
+session_start();
+session_unset(); // remove all session variables
+session_destroy(); // destroy the session
+header("Location: ../index.php"); // redirect to homepage
+exit;
 ?>

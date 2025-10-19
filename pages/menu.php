@@ -9,6 +9,8 @@ if ($result) {
     while ($row = $result->fetch_assoc()) {
         $products[] = $row;
     }
+    $result->free();          // free the result set
+    $conn->next_result();     // flush multi-query buffer
 }
 
 // Group products by category
@@ -20,6 +22,19 @@ foreach ($products as $product) {
     }
     $productsByCategory[$category][] = $product;
 }
+
+// Get customer ID if logged in
+$customer_id = $_SESSION['customer_id'] ?? null;
+
+// Fetch number of items in cart
+$cartCount = 0;
+if ($customer_id) {
+    $cartQuery = $conn->query("SELECT SUM(quantity) as total_qty FROM cart WHERE customer_id = $customer_id");
+    if ($cartQuery && $row = $cartQuery->fetch_assoc()) {
+        $cartCount = $row['total_qty'] ?? 0;
+    }
+}
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -331,11 +346,15 @@ foreach ($products as $product) {
             <li><a href="./contact.php">Contact</a></li>
 
             <?php if (isset($_SESSION['customer_id'])): ?>
-                <li><a href="./cart.php" class="auth-btn cart-btn">My Cart</a></li>
-                <li><a href="login/logout.php" class="auth-btn login-btn">Logout</a></li>
+                <li>
+                    <a href="./cart.php" class="auth-btn cart-btn">
+                        🛒 Cart (<?php echo $cartCount; ?>)
+                    </a>
+                </li>
+                <li><a href="/login/logout.php" class="auth-btn login-btn">Logout</a></li>
             <?php else: ?>
-                <li><a href="login/login.php" class="auth-btn login-btn">Login</a></li>
-                <li><a href="login/register.php" class="auth-btn register-btn">Register</a></li>
+                <li><a href="../login/login.php" class="auth-btn login-btn">Login</a></li>
+                <li><a href="../login/register.php" class="auth-btn register-btn">Register</a></li>
             <?php endif; ?>
         </ul>
     </nav>

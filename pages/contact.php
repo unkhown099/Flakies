@@ -37,9 +37,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt->close();
     }
 }
+
+// Get customer ID if logged in
+$customer_id = $_SESSION['customer_id'] ?? null;
+
+// Fetch number of items in cart
+$cartCount = 0;
+if ($customer_id) {
+    $cartQuery = $conn->query("SELECT SUM(quantity) as total_qty FROM cart WHERE customer_id = $customer_id");
+    if ($cartQuery && $row = $cartQuery->fetch_assoc()) {
+        $cartCount = $row['total_qty'] ?? 0;
+    }
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -64,7 +77,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            box-shadow: 0 2px 20px rgba(0,0,0,0.3);
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.3);
             position: sticky;
             top: 0;
             z-index: 100;
@@ -98,13 +111,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         .auth-btn {
-        display: inline-block;
-        padding: 0.5rem 1.2rem;
-        border-radius: 50px;
-        font-weight: 600;
-        text-decoration: none;
-        transition: all 0.3s ease;
-        border: 2px solid #f4e04d;
+            display: inline-block;
+            padding: 0.5rem 1.2rem;
+            border-radius: 50px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            border: 2px solid #f4e04d;
         }
 
         .login-btn {
@@ -156,7 +169,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             border-radius: 20px;
             padding: 3rem;
             margin-bottom: 3rem;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
             text-align: center;
             color: #2d2d2d;
         }
@@ -186,7 +199,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             background: white;
             border-radius: 20px;
             padding: 2.5rem;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
             color: #2d2d2d;
         }
 
@@ -262,7 +275,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             background: white;
             border-radius: 20px;
             padding: 2.5rem;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
         }
 
         .form-section h2 {
@@ -366,7 +379,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             border-radius: 20px;
             padding: 2.5rem;
             margin-top: 2rem;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
             text-align: center;
             color: #2d2d2d;
         }
@@ -411,6 +424,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     </style>
 </head>
+
 <body>
     <nav>
         <div class="logo">
@@ -423,11 +437,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <li><a href="./about.php">about</a></li>
 
             <?php if (isset($_SESSION['customer_id'])): ?>
-                <li><a href="./cart.php" class="auth-btn cart-btn">My Cart</a></li>
-                <li><a href="login/logout.php" class="auth-btn login-btn">Logout</a></li>
+                <li>
+                    <a href="./cart.php" class="auth-btn cart-btn">
+                        🛒 Cart (<?php echo $cartCount; ?>)
+                    </a>
+                </li>
+                <li><a href="/login/logout.php" class="auth-btn login-btn">Logout</a></li>
             <?php else: ?>
-                <li><a href="login/login.php" class="auth-btn login-btn">Login</a></li>
-                <li><a href="login/register.php" class="auth-btn register-btn">Register</a></li>
+                <li><a href="../login/login.php" class="auth-btn login-btn">Login</a></li>
+                <li><a href="../login/register.php" class="auth-btn register-btn">Register</a></li>
             <?php endif; ?>
         </ul>
     </nav>
@@ -442,7 +460,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <!-- Contact Information -->
             <div class="contact-info-section">
                 <h2>📍 Contact Information</h2>
-                
+
                 <div class="contact-item">
                     <div class="contact-icon">📍</div>
                     <div class="contact-content">
@@ -487,11 +505,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <!-- Contact Form -->
             <div class="form-section">
                 <h2>Send us a Message</h2>
-                
+
                 <?php if ($successMessage): ?>
                     <div class="success-message">✓ <?php echo htmlspecialchars($successMessage); ?></div>
                 <?php endif; ?>
-                
+
                 <?php if ($errorMessage): ?>
                     <div class="error-message">✗ <?php echo htmlspecialchars($errorMessage); ?></div>
                 <?php endif; ?>
@@ -534,18 +552,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <!-- Map Section -->
             <div class="map-section">
                 <div style="width: 100%; height: 400px; border-radius: 15px; overflow: hidden;">
-                    <iframe
-                        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3857.4359824158233!2d120.99449947590227!3d14.537752478048692!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3397c9e2c54e52ef%3A0xa779ca77b7a47d4e!2sPasay%20City%2C%20Metro%20Manila!5e0!3m2!1sen!2sph!4v1739919999999!5m2!1sen!2sph"
-                        width="100%"
-                        height="100%"
-                        style="border:0;"
-                        allowfullscreen=""
-                        loading="lazy"
-                        referrerpolicy="no-referrer-when-downgrade">
-                    </iframe>
+                    <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3858.1385734496016!2d121.0493210751221!3d14.761221873123954!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3397b0215c5f5509%3A0xe47b1ff182ae61df!2s2651%20Magnolia%20St%2C%20Caloocan%2C%20Metro%20Manila!5e0!3m2!1sfil!2sph!4v1760868403578!5m2!1sfil!2sph" 
+                    width="800" 
+                    height="600" 
+                    style="border:0;" 
+                    allowfullscreen="" 
+                    loading="lazy" 
+                    referrerpolicy="no-referrer-when-downgrade">
+                </iframe>
                 </div>
             </div>
         </div>
     </div>
 </body>
+
 </html>

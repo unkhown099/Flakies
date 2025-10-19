@@ -5,6 +5,18 @@ include("config/db_connect.php");
 // Fetch products dynamically
 $sql = "SELECT name, description, price, stock, image FROM products";
 $result = $conn->query($sql);
+
+// Get customer ID if logged in
+$customer_id = $_SESSION['customer_id'] ?? null;
+
+// Fetch number of items in cart if logged in
+$cartCount = 0;
+if ($customer_id) {
+    $cartQuery = $conn->query("SELECT SUM(quantity) as total_qty FROM cart WHERE customer_id = $customer_id");
+    if ($cartQuery && $row = $cartQuery->fetch_assoc()) {
+        $cartCount = $row['total_qty'] ?? 0;
+    }
+}
 ?>
 
 <!DOCTYPE html>
@@ -484,8 +496,8 @@ $result = $conn->query($sql);
         }
 
         footer {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
+            background: #2d2d2d;
+            color: #f4e04d;
             padding: 3rem 5%;
             text-align: center;
         }
@@ -532,7 +544,11 @@ $result = $conn->query($sql);
             <li><a href="pages/contact.php">Contact</a></li>
 
             <?php if (isset($_SESSION['customer_id'])): ?>
-                <li><a href="pages/cart.php" class="auth-btn cart-btn">My Cart</a></li>
+                <li>
+                    <a href="pages/cart.php" class="auth-btn cart-btn">
+                        🛒 Cart (<?php echo $cartCount; ?>)
+                    </a>
+                </li>
                 <li><a href="login/logout.php" class="auth-btn login-btn">Logout</a></li>
             <?php else: ?>
                 <li><a href="login/login.php" class="auth-btn login-btn">Login</a></li>
