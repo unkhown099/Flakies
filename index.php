@@ -68,44 +68,38 @@ $result = $conn->query($sql);
         }
 
         nav {
-            position: fixed;
-            top: 0;
-            width: 100%;
-            padding: 1.5rem 5%;
+            background: #2d2d2d;
+            color: #f4e04d;
+            padding: 1.2rem 5%;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            z-index: 1000;
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
-        }
-
-        .logo {
-            font-size: 1.8rem;
-            font-weight: 800;
-            letter-spacing: -1px;
-            background: linear-gradient(135deg, #d9ed42ff 0%, #d39e2aff 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+            box-shadow: 0 2px 20px rgba(0,0,0,0.3);
+            position: sticky;
+            top: 0;
+            z-index: 100;
         }
 
         .logo {
             display: flex;
             align-items: center;
+            gap: 10px;
+            text-decoration: none;
         }
 
         .logo img {
             height: 45px;
-            /* make it smaller */
-            width: auto;
-            /* keep proportions */
-            border-radius: 8px;
-            /* optional: slight rounding */
-            margin-right: 10px;
-            /* space from text if you add one later */
+            width: 45px;
+            border-radius: 50%;
+            object-fit: cover;
         }
+
+        .logo span {
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: #f4e04d;
+        }
+
 
 
         .nav-links {
@@ -116,14 +110,44 @@ $result = $conn->query($sql);
         }
 
         .nav-links a {
-            color: #333;
+            color: #f4e04d;
             text-decoration: none;
             font-weight: 500;
-            transition: color 0.3s;
+            transition: opacity 0.3s;
         }
 
         .nav-links a:hover {
             color: #667eea;
+        }
+
+        .auth-btn {
+        display: inline-block;
+        padding: 0.5rem 1.2rem;
+        border-radius: 50px;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        border: 2px solid #f4e04d;
+        }
+
+        .login-btn {
+            background: transparent;
+            color: #f4e04d;
+        }
+
+        .login-btn:hover {
+            background: #f4e04d;
+            color: #2d2d2d;
+        }
+
+        .register-btn {
+            background: transparent;
+            color: #2d2d2d;
+        }
+
+        .register-btn:hover {
+            background: #f4e04d;
+            color: #2d2d2d;
         }
 
         .cart-btn {
@@ -494,17 +518,20 @@ $result = $conn->query($sql);
 <body>
     <nav>
         <div class="logo">
-            <img src="assets/pictures/45b0e7c9-8bc1-4ef3-bac2-cfc07174d613.png" alt="Flakies Logo"> Flakies
+            <img src="assets/pictures/45b0e7c9-8bc1-4ef3-bac2-cfc07174d613.png" alt="Flakies Logo">
+            <span>Flakies</span>
         </div>
         <ul class="nav-links">
-            <li><a href="#products">Menu</a></li>
-            <li><a href="#features">About</a></li>
-            <li><a href="#contact">Contact</a></li>
-            <li><a href="#" class="cart-btn">🛒 Cart</a></li>
+            <li><a href="pages/menu.php">Menu</a></li>
+            <li><a href="pages/about.php">About</a></li>
+            <li><a href="pages/contact.php">Contact</a></li>
+
+            <li><a href="login/login.php" class="auth-btn login-btn">Login</a></li>
+            <li><a href="login/register.php" class="auth-btn register-btn">Register</a></li>
         </ul>
     </nav>
 
-    <<section class="hero">
+    <section class="hero">
         <div class="hero-content">
             <h1><span>Flakies</span> — Sarap ng Pilipinas! 🇵🇭</h1>
             <p>Bringing the best of Filipino street and home delicacies to your doorstep. Taste nostalgia, love, and warmth in every bite.</p>
