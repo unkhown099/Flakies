@@ -1,4 +1,5 @@
 <?php
+session_start();
 include("config/db_connect.php");
 
 // Fetch products dynamically
@@ -526,8 +527,13 @@ $result = $conn->query($sql);
             <li><a href="pages/about.php">About</a></li>
             <li><a href="pages/contact.php">Contact</a></li>
 
-            <li><a href="login/login.php" class="auth-btn login-btn">Login</a></li>
-            <li><a href="login/register.php" class="auth-btn register-btn">Register</a></li>
+            <?php if (isset($_SESSION['customer_id'])): ?>
+                <li><a href="pages/cart.php" class="auth-btn cart-btn">My Cart</a></li>
+                <li><a href="login/logout.php" class="auth-btn login-btn">Logout</a></li>
+            <?php else: ?>
+                <li><a href="login/login.php" class="auth-btn login-btn">Login</a></li>
+                <li><a href="login/register.php" class="auth-btn register-btn">Register</a></li>
+            <?php endif; ?>
         </ul>
     </nav>
 

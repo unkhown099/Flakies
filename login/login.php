@@ -8,6 +8,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $username = trim($_POST['username']);
     $password = trim($_POST['password']);
 
+    // Check staff table first
     $sql = "SELECT * FROM staff WHERE username = ?";
     $stmt = $conn->prepare($sql);
     $stmt->bind_param("s", $username);
@@ -38,7 +39,26 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $error = "❌ Invalid password.";
         }
     } else {
-        $error = "❌ No user found with that username.";
+        // Check customer table if not found in staff
+        $sql2 = "SELECT * FROM customers WHERE username = ?";
+        $stmt2 = $conn->prepare($sql2);
+        $stmt2->bind_param("s", $username);
+        $stmt2->execute();
+        $result2 = $stmt2->get_result();
+
+        if ($result2->num_rows === 1) {
+            $row2 = $result2->fetch_assoc();
+            if (password_verify($password, $row2['password'])) {
+                $_SESSION['customer_id'] = $row2['id'];
+                $_SESSION['customer_username'] = $row2['username'];
+                header("Location: ../index.php");
+                exit();
+            } else {
+                $error = "❌ Invalid password.";
+            }
+        } else {
+            $error = "❌ No user found with that username.";
+        }
     }
 }
 ?>
@@ -188,6 +208,20 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         .links a:hover {
             color: #d39e2a;
         }
+
+        .home-link {
+            display: block;
+            margin-top: 25px;
+            text-align: center;
+            font-weight: 600;
+            text-decoration: none;
+            color: #000;
+            transition: color 0.3s ease;
+        }
+
+        .home-link:hover {
+            color: #d39e2a;
+        }
     </style>
 </head>
 
@@ -219,6 +253,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             <a href="register.php">Create Account</a>
             <a href="forgot_password.php">Forgot Password?</a>
         </div>
+
+        <a href="../index.php" class="home-link">🏠 Back to Home</a>
     </div>
 
     <script>
@@ -235,5 +271,4 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         }
     </script>
 </body>
-
 </html>
