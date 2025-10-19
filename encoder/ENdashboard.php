@@ -1,38 +1,41 @@
 <?php
-    session_start();
+session_start();
 
-    // if not logged in, redirect to login
-    if (!isset($_SESSION['staff_id'])) {
-        header("Location: login.php");
-        exit();
-    }
+// if not logged in, redirect to login
+if (!isset($_SESSION['staff_id'])) {
+    header("Location: login.php");
+    exit();
+}
 
-    $role = $_SESSION['role'];
-    $username2 = $_SESSION['username'];
+$role = $_SESSION['role'];
+$username2 = $_SESSION['username'];
 
-    include("../config/db_connect.php");
+include("../config/db_connect.php");
 
-    // Query to count products
-    $result = $conn->query("SELECT COUNT(*) AS totalprod FROM products");
+// Query to count products
+$result = $conn->query("SELECT COUNT(*) AS totalprod FROM products");
 
-    // Fetch count
-    $productCount = 0;
-    if ($result && $row = $result->fetch_assoc()) {
-        $productCount = $row['totalprod'];
-    }
+// Fetch count
+$productCount = 0;
+if ($result && $row = $result->fetch_assoc()) {
+    $productCount = $row['totalprod'];
+}
 ?>
 
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <title>Flakies | Dashboard</title>
     <link rel="stylesheet" href="../assets/ENcss/EN.css">
 </head>
+
 <body>
     <div class="ENsidebar">
         <div class="logo">
-            <img src="..\assets\pictures\45b0e7c9-8bc1-4ef3-bac2-cfc07174d613.png" alt="Flakies Logo" >
+            <img src="..\assets\pictures\45b0e7c9-8bc1-4ef3-bac2-cfc07174d613.png" alt="Flakies Logo">
+            <span>Flakies</span>
         </div>
         <p class="welcome">Welcome, <?php echo htmlspecialchars($username2); ?>!</p>
 
@@ -41,12 +44,12 @@
                 <a href="ENdashboard.php">🏠 Dashboard</a>
             </li>
             <?php if ($role === 'encoder') : ?>
-            <li>
-                <a href="ENinventory.php">📦 Inventory</a>
-            </li>            
+                <li>
+                    <a href="ENinventory.php">📦 Inventory</a>
+                </li>
             <?php endif; ?>
             <li>
-                <a href="logout.php" class="ENbtn-logout">🚪 Logout</a>
+                <a href="logout.php" class="logout-link">Logout</a>
             </li>
         </ul>
     </div>
@@ -58,10 +61,10 @@
         <div class="DENpad-container">
             <div class="DENcards">
                 <h2>Total Products:</h2>
-                <h1><?php echo $productCount;?></h1>
+                <h1><?php echo $productCount; ?></h1>
             </div>
         </div>
-        
+
         <h3 class="DENtable-title">LOW STOCK PRODUCTS</h3>
 
         <div class="DENtable-wrapper">
@@ -77,16 +80,16 @@
 
                 <tbody id="productTableBody">
                     <?php
-                        $sql1 = "SELECT * FROM products WHERE stock <= 10";
-                        $query1 = mysqli_query($conn, $sql1);
+                    $sql1 = "SELECT * FROM products WHERE stock <= 10";
+                    $query1 = mysqli_query($conn, $sql1);
                     ?>
                     <?php while ($row = mysqli_fetch_assoc($query1)) : ?>
-                    <tr>
-                        <td class="DENtable-data"><?php echo ($row['name']); ?></td>
-                        <td class="DENtable-data"><?php echo ($row['price']); ?>₱</td>
-                        <td class="DENtable-data"><?php echo ($row['stock']); ?></td>
-                        <td class="DENtable-data"><?php echo ($row['created_at']); ?></td>
-                    </tr>
+                        <tr>
+                            <td class="DENtable-data"><?php echo ($row['name']); ?></td>
+                            <td class="DENtable-data"><?php echo ($row['price']); ?>₱</td>
+                            <td class="DENtable-data"><?php echo ($row['stock']); ?></td>
+                            <td class="DENtable-data"><?php echo ($row['created_at']); ?></td>
+                        </tr>
                     <?php endwhile; ?>
                 </tbody>
             </table>
@@ -107,20 +110,21 @@
 
                 <tbody id="productTableBody">
                     <?php
-                        $sql1 = "SELECT * FROM products LIMIT 10";
-                        $query1 = mysqli_query($conn, $sql1);
+                    $sql1 = "SELECT * FROM products LIMIT 10";
+                    $query1 = mysqli_query($conn, $sql1);
                     ?>
                     <?php while ($row = mysqli_fetch_assoc($query1)) : ?>
-                    <tr>
-                        <td class="DENtable-data"><?php echo ($row['name']); ?></td>
-                        <td class="DENtable-data"><?php echo ($row['price']); ?>₱</td>
-                        <td class="DENtable-data"><?php echo ($row['stock']); ?></td>
-                        <td class="DENtable-data"><?php echo ($row['created_at']); ?></td>
-                    </tr>
+                        <tr>
+                            <td class="DENtable-data"><?php echo ($row['name']); ?></td>
+                            <td class="DENtable-data"><?php echo ($row['price']); ?>₱</td>
+                            <td class="DENtable-data"><?php echo ($row['stock']); ?></td>
+                            <td class="DENtable-data"><?php echo ($row['created_at']); ?></td>
+                        </tr>
                     <?php endwhile; ?>
                 </tbody>
             </table>
         </div>
     </section>
 </body>
+
 </html>
