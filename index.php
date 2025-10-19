@@ -181,6 +181,23 @@ if ($customer_id) {
             color: #2d2d2d;
         }
 
+        .profile-link {
+        display: inline-block;
+        width: 35px;
+        height: 35px;
+        border-radius: 50%;
+        overflow: hidden;
+        margin-left: 10px;
+}
+
+        .profile-link .profile-pic {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 50%;
+        }
+
+
         .hero {
             display: flex;
             align-items: center;
@@ -534,28 +551,34 @@ if ($customer_id) {
 
 <body>
     <nav>
-        <div class="logo">
-            <img src="assets/pictures/45b0e7c9-8bc1-4ef3-bac2-cfc07174d613.png" alt="Flakies Logo">
-            <span>Flakies</span>
-        </div>
-        <ul class="nav-links">
-            <li><a href="pages/menu.php">Menu</a></li>
-            <li><a href="pages/about.php">About</a></li>
-            <li><a href="pages/contact.php">Contact</a></li>
+    <div class="logo">
+        <img src="assets/pictures/45b0e7c9-8bc1-4ef3-bac2-cfc07174d613.png" alt="Flakies Logo">
+        <span>Flakies</span>
+    </div>
+    <ul class="nav-links">
+        <li><a href="pages/menu.php">Menu</a></li>
+        <li><a href="pages/about.php">About</a></li>
+        <li><a href="pages/contact.php">Contact</a></li>
 
-            <?php if (isset($_SESSION['customer_id'])): ?>
-                <li>
-                    <a href="pages/cart.php" class="auth-btn cart-btn">
-                        🛒 Cart (<?php echo $cartCount; ?>)
-                    </a>
-                </li>
-                <li><a href="login/logout.php" class="auth-btn login-btn">Logout</a></li>
-            <?php else: ?>
-                <li><a href="login/login.php" class="auth-btn login-btn">Login</a></li>
-                <li><a href="login/register.php" class="auth-btn register-btn">Register</a></li>
-            <?php endif; ?>
-        </ul>
-    </nav>
+        <?php if (isset($_SESSION['customer_id'])): ?>
+            <li>
+                <a href="pages/cart.php" class="auth-btn cart-btn">
+                    🛒 Cart (<?php echo $cartCount; ?>)
+                </a>
+            </li>
+            <li><a href="login/logout.php" class="auth-btn login-btn">Logout</a></li>
+            <li>
+                <a href="pages/profile.php" class="profile-link">
+                    <img src="<?php echo $_SESSION['profile_picture'] ?? 'assets/pictures/default-profile.png'; ?>" 
+                         alt="Profile" class="profile-pic">
+                </a>
+            </li>
+        <?php else: ?>
+            <li><a href="login/login.php" class="auth-btn login-btn">Login</a></li>
+            <li><a href="login/register.php" class="auth-btn register-btn">Register</a></li>
+        <?php endif; ?>
+    </ul>
+</nav>
 
     <section class="hero">
         <div class="hero-content">

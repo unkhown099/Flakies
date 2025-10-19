@@ -19,4 +19,4 @@ In forgot_password.php, at the very top, add:
 
 require '../vendor/autoload.php';
 
-PS: Just need some modification
+PS: GIT IGNORE THE VENDOR ALWAYS
