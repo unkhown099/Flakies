@@ -1,25 +1,76 @@
 <?php
 require '../config/db_connect.php';
+require '../vendor/autoload.php';
+
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\Exception;
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $username = trim($_POST['username']);
+    $email = trim($_POST['email']);
 
-    $stmt = $conn->prepare("SELECT * FROM staff WHERE username = ? LIMIT 1");
-    $stmt->bind_param("s", $username);
+    $stmt = $conn->prepare("SELECT * FROM customers WHERE email = ? LIMIT 1");
+    $stmt->bind_param("s", $email);
     $stmt->execute();
     $result = $stmt->get_result();
 
+    echo '<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>';
+
     if ($result->num_rows === 1) {
-        $newPassword = substr(str_shuffle("abcdefghijklmnopqrstuvwxyz0123456789"), 0, 8);
+        $newPassword = substr(str_shuffle("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"), 0, 8);
         $hashed = password_hash($newPassword, PASSWORD_DEFAULT);
 
-        $update = $conn->prepare("UPDATE staff SET password=? WHERE username=?");
-        $update->bind_param("ss", $hashed, $username);
+        $update = $conn->prepare("UPDATE customers SET password=? WHERE email=?");
+        $update->bind_param("ss", $hashed, $email);
         $update->execute();
 
-        echo "<script>alert('✅ Your password has been reset. New password: $newPassword'); window.location='login.php';</script>";
+        $mail = new PHPMailer(true);
+        try {
+            $mail->isSMTP();
+            $mail->Host = 'smtp.gmail.com';
+            $mail->SMTPAuth = true;
+            $mail->Username = 'flakies050@gmail.com';
+            $mail->Password = 'mpqw ieiz exil xnob';
+            $mail->SMTPSecure = 'tls';
+            $mail->Port = 587;
+
+            $mail->setFrom('flakies050@gmail.com', 'Flakies Support');
+            $mail->addAddress($email);
+
+            $mail->isHTML(true);
+            $mail->Subject = 'Flakies Password Reset';
+            $mail->Body = "Your password has been reset. Your new temporary password is: <b>$newPassword</b>. Please login and change it immediately.";
+
+            $mail->send();
+
+            echo "<script>
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Email Sent!',
+                    text: 'A new password has been sent to your email.',
+                    confirmButtonText: 'OK'
+                }).then(() => {
+                    window.location = 'login.php';
+                });
+            </script>";
+        } catch (Exception $e) {
+            echo "<script>
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error!',
+                    text: 'Password reset failed. Please try again later.',
+                    confirmButtonText: 'OK'
+                });
+            </script>";
+        }
     } else {
-        echo "<script>alert('❌ User not found.'); window.location='forgot_password.php';</script>";
+        echo "<script>
+            Swal.fire({
+                icon: 'warning',
+                title: 'Email Not Found',
+                text: 'No account is registered with this email.',
+                confirmButtonText: 'OK'
+            });
+        </script>";
     }
 }
 ?>
@@ -30,7 +81,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta charset="UTF-8">
     <title>Flakies | Forgot Password</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
-
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
         body {
             font-family: "Poppins", sans-serif;
@@ -92,7 +143,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             margin-bottom: 18px;
         }
 
-        input[type="text"] {
+        input[type="email"] {
             width: 85%;
             padding: 12px 15px;
             border: 1px solid #ccc;
@@ -158,7 +209,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         <form action="forgot_password.php" method="POST">
             <div class="input-group">
-                <input type="text" name="username" placeholder="Enter your username" required>
+                <input type="email" name="email" placeholder="Enter your email" required>
             </div>
             <button type="submit" class="btn-login">Reset Password</button>
         </form>

@@ -562,8 +562,9 @@ if ($customer_id) {
             <h1><span>Flakies</span> — Sarap ng Pilipinas! 🇵🇭</h1>
             <p>Bringing the best of Filipino street and home delicacies to your doorstep. Taste nostalgia, love, and warmth in every bite.</p>
             <div class="hero-buttons">
-                <button class="btn btn-primary">Order Now</button>
-                <button class="btn btn-secondary">View Menu</button>
+                <a href="./pages/menu.php">
+                <button class="btn btn-secondary" >View Menu</button>
+                </a>
             </div>
         </div>
         <div class="hero-image">

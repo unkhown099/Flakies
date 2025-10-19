@@ -8,26 +8,65 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $email = trim($_POST['email']);
     $phone = trim($_POST['phone']);
     $username = trim($_POST['username']);
-    $password = password_hash($_POST['password'], PASSWORD_DEFAULT);
+    $password = $_POST['password'];
 
-    $stmt = $conn->prepare("INSERT INTO customers (first_name, middle_name, last_name, email, phone, username, password) VALUES (?, ?, ?, ?, ?, ?, ?)");
-    $stmt->bind_param("sssssss", $first_name, $middle_name, $last_name, $email, $phone, $username, $password);
+    $errors = [];
 
-    if ($stmt->execute()) {
-        echo "<script>alert('✅ Account created successfully! Please login.'); window.location='login.php';</script>";
+    if ($first_name === '') $errors[] = 'First name is required';
+    if ($last_name === '') $errors[] = 'Last name is required';
+    if ($email === '') $errors[] = 'Email is required';
+    if ($username === '') $errors[] = 'Username is required';
+    if ($password === '') $errors[] = 'Password is required';
+
+    echo '<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>';
+
+    if (count($errors) === 0) {
+        $password_hash = password_hash($password, PASSWORD_DEFAULT);
+        $stmt = $conn->prepare("INSERT INTO customers (first_name, middle_name, last_name, email, phone, username, password) VALUES (?, ?, ?, ?, ?, ?, ?)");
+        $stmt->bind_param("sssssss", $first_name, $middle_name, $last_name, $email, $phone, $username, $password_hash);
+
+        if ($stmt->execute()) {
+            echo "<script>
+            Swal.fire({
+                icon: 'success',
+                title: 'Account Created!',
+                text: 'Your registration was successful. Please login.',
+                confirmButtonText: 'OK'
+            }).then(() => {
+                window.location = 'login.php';
+            });
+            </script>";
+        } else {
+            echo "<script>
+            Swal.fire({
+                icon: 'error',
+                title: 'Registration Failed',
+                text: 'Username or Email may already exist.',
+                confirmButtonText: 'OK'
+            }).then(() => {
+                window.location = 'register.php';
+            });
+            </script>";
+        }
     } else {
-        echo "<script>alert('❌ Error: Username or Email may already exist.'); window.location='register.php';</script>";
+        echo "<script>
+        Swal.fire({
+            icon: 'warning',
+            title: 'Incomplete Form',
+            html: '".implode("<br>", $errors)."',
+            confirmButtonText: 'OK'
+        });
+        </script>";
     }
 }
 ?>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <title>Flakies | Register</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
-
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
         body {
             font-family: "Poppins", sans-serif;
@@ -155,27 +194,34 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <h1 class="logo-text">Flakies</h1>
         <p class="welcome">Create a new account</p>
 
-        <form action="register.php" method="POST">
+        <form id="registerForm" action="register.php" method="POST">
             <div class="input-group">
-                <input type="text" name="first_name" placeholder="First Name" required>
+                <input type="text" name="first_name" placeholder="First Name">
+                <span class="error-msg"></span>
             </div>
             <div class="input-group">
                 <input type="text" name="middle_name" placeholder="Middle Name (Optional)">
+                <span class="error-msg"></span>
             </div>
             <div class="input-group">
-                <input type="text" name="last_name" placeholder="Last Name" required>
+                <input type="text" name="last_name" placeholder="Last Name">
+                <span class="error-msg"></span>
             </div>
             <div class="input-group">
-                <input type="email" name="email" placeholder="Email" required>
+                <input type="email" name="email" placeholder="Email">
+                <span class="error-msg"></span>
             </div>
             <div class="input-group">
                 <input type="text" name="phone" placeholder="Phone Number (Optional)">
+                <span class="error-msg"></span>
             </div>
             <div class="input-group">
-                <input type="text" name="username" placeholder="Username" required>
+                <input type="text" name="username" placeholder="Username">
+                <span class="error-msg"></span>
             </div>
             <div class="input-group">
-                <input type="password" name="password" placeholder="Password" required>
+                <input type="password" name="password" placeholder="Password">
+                <span class="error-msg"></span>
             </div>
 
             <button type="submit" class="btn-login">Register</button>
@@ -184,6 +230,37 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <div class="links">
             <a href="login.php">Already have an account? Login</a>
         </div>
+        <div class="links">
+            <a href="../index.php" class="home-link">🏠 Back to Home</a>
+        </div>
     </div>
+
+        <script>
+        document.getElementById('registerForm').addEventListener('submit', function(e) {
+            let isValid = true;
+            const requiredFields = ['first_name', 'last_name', 'email', 'username', 'password']; // required field names
+
+            requiredFields.forEach(name => {
+                const input = this.querySelector(`input[name="${name}"]`);
+                const errorMsg = input.nextElementSibling;
+
+                if (input.value.trim() === '') {
+                    input.style.borderColor = 'red';
+                    errorMsg.textContent = '*Required';
+                    errorMsg.style.color = 'red';
+                    errorMsg.style.fontSize = '12px';
+                    isValid = false;
+                } else {
+                    input.style.borderColor = '#ccc';
+                    errorMsg.textContent = '';
+                }
+            });
+
+            if (!isValid) {
+                e.preventDefault(); // Stop form from submitting
+            }
+        });
+        </script>
+
 </body>
 </html>

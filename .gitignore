@@ -1,1 +1,4 @@
-# config/db_connect.php
+/vendor/
+*.log
+/.vs/
+/.vscode/

@@ -3,6 +3,7 @@ session_start();
 require "../config/db_connect.php";
 
 $error = "";
+$successRedirect = "";
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $username = trim($_POST['username']);
@@ -17,29 +18,22 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     if ($result->num_rows === 1) {
         $row = $result->fetch_assoc();
-
         if (password_verify($password, $row['password'])) {
             $_SESSION['staff_id'] = $row['id'];
             $_SESSION['username'] = $row['username'];
             $_SESSION['role'] = $row['role'];
 
-            if ($row['role'] === 'admin') {
-                header("Location: ../admin/dashboard.php");
-            } elseif ($row['role'] === 'cashier') {
-                header("Location: pos.php");
-            } elseif ($row['role'] === 'encoder') {
-                header("Location: ../encoder/ENdashboard.php");
-            } elseif ($row['role'] === 'manager') {
-                header("Location: reports.php");
-            } else {
-                header("Location: dashboard.php");
-            }
-            exit();
+            if ($row['role'] === 'admin') $successRedirect = '../admin/dashboard.php';
+            elseif ($row['role'] === 'cashier') $successRedirect = 'pos.php';
+            elseif ($row['role'] === 'encoder') $successRedirect = '../encoder/ENdashboard.php';
+            elseif ($row['role'] === 'manager') $successRedirect = 'reports.php';
+            else $successRedirect = 'dashboard.php';
+
         } else {
             $error = "❌ Invalid password.";
         }
     } else {
-        // Check customer table if not found in staff
+        // Check customer table
         $sql2 = "SELECT * FROM customers WHERE username = ?";
         $stmt2 = $conn->prepare($sql2);
         $stmt2->bind_param("s", $username);
@@ -51,8 +45,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             if (password_verify($password, $row2['password'])) {
                 $_SESSION['customer_id'] = $row2['id'];
                 $_SESSION['customer_username'] = $row2['username'];
-                header("Location: ../index.php");
-                exit();
+                $successRedirect = '../index.php';
             } else {
                 $error = "❌ Invalid password.";
             }
@@ -222,6 +215,17 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         .home-link:hover {
             color: #d39e2a;
         }
+        .required-field.error-border {
+            border-color: red;
+            box-shadow: 0 0 6px rgba(255, 0, 0, 0.5);
+        }
+        .required-message {
+            color: red;
+            font-size: 12px;
+            margin-top: 5px;
+            display: none;
+        }
+
     </style>
 </head>
 
@@ -240,10 +244,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
         <form action="login.php" method="POST" class="login-form">
             <div class="input-group">
-                <input type="text" name="username" placeholder="Username" required>
+                <input type="text" name="username" placeholder="Username" class="required-field">
+                <span class="required-message">*Required</span>
             </div>
             <div class="input-group">
-                <input type="password" name="password" id="password" placeholder="Password" required>
+                <input type="password" name="password" id="password" placeholder="Password" class="required-field">
+                <span class="required-message">*Required</span>
                 <span class="toggle-password" onclick="togglePassword()">👁️</span>
             </div>
             <button type="submit" class="btn-login">Login</button>
@@ -257,18 +263,63 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         <a href="../index.php" class="home-link">🏠 Back to Home</a>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
-        function togglePassword() {
-            const passwordField = document.getElementById("password");
-            const toggle = document.querySelector(".toggle-password");
-            if (passwordField.type === "password") {
-                passwordField.type = "text";
-                toggle.textContent = "🙈";
-            } else {
-                passwordField.type = "password";
-                toggle.textContent = "👁️";
-            }
+    function togglePassword() {
+        const passwordField = document.getElementById("password");
+        const toggle = document.querySelector(".toggle-password");
+        if (passwordField.type === "password") {
+            passwordField.type = "text";
+            toggle.textContent = "🙈";
+        } else {
+            passwordField.type = "password";
+            toggle.textContent = "👁️";
         }
+    }
+
+    <?php if ($error): ?>
+    Swal.fire({
+        icon: 'error',
+        title: 'Oops!',
+        text: '<?= $error ?>'
+    });
+    <?php endif; ?>
+
+    <?php if ($successRedirect): ?>
+    Swal.fire({
+        icon: 'success',
+        title: 'Login Successful!',
+        text: 'Redirecting...',
+        timer: 1500,
+        showConfirmButton: false
+    }).then(() => {
+        window.location.href = '<?= $successRedirect ?>';
+    });
+    <?php endif; ?>
+
+    const form = document.querySelector('.login-form');
+        form.addEventListener('submit', function(e) {
+            let hasError = false;
+            document.querySelectorAll('.required-field').forEach((input, index) => {
+                const message = input.nextElementSibling; // the span
+                if (input.value.trim() === '') {
+                    input.classList.add('error-border');
+                    message.style.display = 'block';
+                    hasError = true;
+                } else {
+                    input.classList.remove('error-border');
+                    message.style.display = 'none';
+                }
+            });
+            if (hasError) {
+                e.preventDefault();
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Oops!',
+                    text: 'Please fill in all required fields.'
+                });
+            }
+        });
     </script>
 </body>
 </html>

@@ -7,10 +7,6 @@ $errorMessage = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Redirect only when the user submits and is not logged in
-    if (!isset($_SESSION['user_id'])) {
-        header("Location: ../login/login.php");
-        exit();
-    }
 
     $name = $conn->real_escape_string(trim($_POST['name'] ?? ''));
     $email = $conn->real_escape_string(trim($_POST['email'] ?? ''));
@@ -404,6 +400,14 @@ if ($customer_id) {
             margin-top: 1rem;
         }
 
+        .required-message {
+        color: #f56565;
+        display: none;
+        font-weight: 500;
+        margin-top: 5px;
+        font-size: 0.9rem;
+    }
+
         @media (max-width: 768px) {
             .content-wrapper {
                 grid-template-columns: 1fr;
@@ -442,7 +446,7 @@ if ($customer_id) {
                         🛒 Cart (<?php echo $cartCount; ?>)
                     </a>
                 </li>
-                <li><a href="/login/logout.php" class="auth-btn login-btn">Logout</a></li>
+                <li><a href="../login/logout.php" class="auth-btn login-btn">Logout</a></li>
             <?php else: ?>
                 <li><a href="../login/login.php" class="auth-btn login-btn">Login</a></li>
                 <li><a href="../login/register.php" class="auth-btn register-btn">Register</a></li>
@@ -514,15 +518,17 @@ if ($customer_id) {
                     <div class="error-message">✗ <?php echo htmlspecialchars($errorMessage); ?></div>
                 <?php endif; ?>
 
-                <form method="POST">
+                <form id="contactForm" method="POST">
                     <div class="form-row">
                         <div class="form-group">
                             <label for="name">Name <span class="required">*</span></label>
-                            <input type="text" id="name" name="name" value="<?php echo htmlspecialchars($name ?? ''); ?>" required>
+                            <input type="text" id="name" name="name" value="<?php echo htmlspecialchars($name ?? ''); ?>">
+                            <small class="required-message">*Required</small>
                         </div>
                         <div class="form-group">
                             <label for="email">Email <span class="required">*</span></label>
-                            <input type="email" id="email" name="email" value="<?php echo htmlspecialchars($email ?? ''); ?>" required>
+                            <input type="email" id="email" name="email" value="<?php echo htmlspecialchars($email ?? ''); ?>">
+                            <small class="required-message">*Required / Invalid Email</small>
                         </div>
                     </div>
 
@@ -533,12 +539,14 @@ if ($customer_id) {
 
                     <div class="form-group">
                         <label for="subject">Subject <span class="required">*</span></label>
-                        <input type="text" id="subject" name="subject" value="<?php echo htmlspecialchars($subject ?? ''); ?>" placeholder="How can we help?" required>
+                        <input type="text" id="subject" name="subject" value="<?php echo htmlspecialchars($subject ?? ''); ?>" placeholder="How can we help?">
+                        <small class="required-message">*Required</small>
                     </div>
 
                     <div class="form-group">
                         <label for="message">Message <span class="required">*</span></label>
-                        <textarea id="message" name="message" placeholder="Tell us more..." required><?php echo htmlspecialchars($message ?? ''); ?></textarea>
+                        <textarea id="message" name="message" placeholder="Tell us more..."><?php echo htmlspecialchars($message ?? ''); ?></textarea>
+                        <small class="required-message">*Required</small>
                     </div>
 
                     <button type="submit" class="submit-btn">Send Message ✉️</button>
@@ -564,6 +572,53 @@ if ($customer_id) {
             </div>
         </div>
     </div>
-</body>
 
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+document.getElementById('contactForm').addEventListener('submit', function(e) {
+    let isValid = true;
+    const name = document.getElementById('name');
+    const email = document.getElementById('email');
+    const subject = document.getElementById('subject');
+    const message = document.getElementById('message');
+
+    // Check if user is logged in (from PHP session)
+    const isLoggedIn = <?php echo isset($_SESSION['user_id']) ? 'true' : 'false'; ?>;
+
+    if (!isLoggedIn) {
+        e.preventDefault();
+        Swal.fire({
+            icon: 'warning',
+            title: 'Login Required',
+            text: 'Please login first to send a message!',
+            confirmButtonText: 'Go to Login'
+        }).then(() => {
+            window.location.href = '../login/login.php';
+        });
+        return; // stop further validation
+    }
+
+    function validateField(field, checkEmail=false) {
+        const msg = field.nextElementSibling;
+        if (field.value.trim() === '' || (checkEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(field.value))) {
+            field.style.borderColor = '#f56565';
+            msg.style.display = 'block';
+            isValid = false;
+        } else {
+            field.style.borderColor = '#d4a942';
+            msg.style.display = 'none';
+        }
+    }
+
+    validateField(name);
+    validateField(email, true);
+    validateField(subject);
+    validateField(message);
+
+    if (!isValid) {
+        e.preventDefault();
+    }
+});
+</script>
+</body>
 </html>
