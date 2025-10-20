@@ -150,7 +150,7 @@ $username = $_SESSION['username'];
                 <input type="text" name="category" id="edit-category"><br>
 
                 <label>Description:</label>
-                <textarea name="description" id="edit-description" rows="5" style="width: 100%;"></textarea><br>
+                <textarea name="description" id="edit-description" rows="8" style="height: 100%; resize: none; overflow-y: auto"></textarea><br>
 
                 <label>Price:</label>
                 <input type="number" name="price" id="edit-price" step="0.01"><br>
