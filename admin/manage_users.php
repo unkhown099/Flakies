@@ -1,6 +1,5 @@
 <?php
 // admin/manage_users.php
-session_start();
 require __DIR__ . '/../config/db_connect.php';
 
 if (!isset($_SESSION['staff_id']) || $_SESSION['role'] !== 'admin') {
