@@ -29,8 +29,27 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             elseif ($row['role'] === 'manager') $successRedirect = '../manager/dashboard.php';
             else $successRedirect = 'dashboard.php';
 
-        } else {
-            $error = "❌ Invalid password.";
+            // Check customer table
+            $sql2 = "SELECT * FROM customers WHERE username = ?";
+            $stmt2 = $conn->prepare($sql2);
+            $stmt2->bind_param("s", $username);
+            $stmt2->execute();
+            $result2 = $stmt2->get_result();
+
+            if ($result2->num_rows === 1) {
+                $row2 = $result2->fetch_assoc();
+                if (password_verify($password, $row2['password'])) {
+                    session_regenerate_id(true);
+                    $_SESSION['customer_id'] = $row2['id'];
+                    $_SESSION['customer_username'] = $row2['username'];
+                    header("Location: ../index.php");
+                    exit;
+                } else {
+                    $error = "❌ Invalid password.";
+                }
+            } else {
+                $error = "❌ No user found with that username.";
+            }
         }
     } else {
         // Check customer table
