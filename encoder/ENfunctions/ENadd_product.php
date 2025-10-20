@@ -3,11 +3,14 @@
 
     if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $name = $_POST["name"];
+        $category = $_POST["category"];
+        $description = $_POST["description"];
         $price = $_POST["price"];
         $stock = $_POST["stock"];
+        $image = $_POST["image"];
 
-        $sql = "INSERT INTO products (name, category, price, stock, description) 
-                VALUES ('$name', '$category', '$price', '$stock', '$description')";
+        $sql = "INSERT INTO products (name, category, description, price, stock, image) 
+                VALUES ('$name', '$category', '$description', '$price', '$stock', '$image')";
 
         if (mysqli_query($conn, $sql)) {
             header("Location: ../ENinventory.php");

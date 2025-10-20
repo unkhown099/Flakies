@@ -60,9 +60,13 @@ $username = $_SESSION['username'];
                 <thead>
                     <tr>
                         <th class="table-header">Product Name</th>
+                        <th class="table-header">Category</th>
+                        <th class="table-header">Description</th>
                         <th class="table-header">Price</th>
                         <th class="table-header">Stock</th>
+                        <th class="table-header">Image</th>
                         <th class="table-header ">Created at</th>
+                        <th class="table-header ">Updated at</th>
                     </tr>
                 </thead>
 
@@ -74,11 +78,24 @@ $username = $_SESSION['username'];
                     <?php while ($row = mysqli_fetch_assoc($query1)) : ?>
                         <tr>
                             <td class="table-data"><?php echo ($row['name']); ?></td>
+                            <td class="table-data"><?php echo ($row['category']); ?></td>
+                            <td class="table-data"><?php echo ($row['description']); ?></td>
                             <td class="table-data"><?php echo ($row['price']); ?>₱</td>
                             <td class="table-data"><?php echo ($row['stock']); ?></td>
+                            <td class="table-data"><?php echo ($row['image']); ?></td>
                             <td class="table-data"><?php echo ($row['created_at']); ?></td>
-                            <td class="INENdel-btn-container">
+                            <td class="table-data"><?php echo ($row['updated_at']); ?></td>
+                            <td class="INENtable-btn-container">
                                 <button class="INENdel-btn" data-id="<?php echo $row['id']; ?>">Delete</button>
+                                <button 
+                                    class="INENedit-btn"
+                                    data-id="<?php echo $row['id']; ?>"
+                                    data-name="<?php echo ($row['name']); ?>"
+                                    data-category="<?php echo ($row['category']); ?>"
+                                    data-description="<?php echo ($row['description']); ?>"
+                                    data-price="<?php echo $row['price']; ?>"
+                                    data-stock="<?php echo $row['stock']; ?>"
+                                >Edit</button>
                             </td>
                         </tr>
                     <?php endwhile; ?>
@@ -99,13 +116,49 @@ $username = $_SESSION['username'];
                 <label>Product Name:</label>
                 <input type="text" name="name" required><br>
 
+                <label>Category:</label>
+                <input type="text" name="category" required><br>
+
+                <label>Description:</label>
+                <textarea type="text" name="description" rows="8" style="height: 100%; resize: none; overflow-y: auto"></textarea><br>
+
                 <label>Price:</label>
                 <input type="number" step="0.01" name="price" required><br>
 
                 <label>Stock Quantity:</label>
                 <input type="number" name="stock" required><br>
 
+                <label>Image:</label>
+                <input type="file" name="image" accept="image/*" required><br>
+
                 <button type="submit">Add Product</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="INENeditModal" class="INENedit-modal" style="display: none;">
+        <div class="INENeditmodal-content">
+            <span class="INENedit-close-btn">&times;</span>
+            <h2>Edit product</h2>
+            <form id="editForm" method="POST" action="../encoder/ENfunctions/ENupdate_product.php">
+                <input type="hidden" name="id" id="edit-id">
+
+                <label>Product Name:</label>
+                <input type="text" name="name" id="edit-name"><br>
+
+                <label>Category:</label>
+                <input type="text" name="category" id="edit-category"><br>
+
+                <label>Description:</label>
+                <textarea name="description" id="edit-description" rows="5" style="width: 100%;"></textarea><br>
+
+                <label>Price:</label>
+                <input type="number" name="price" id="edit-price" step="0.01"><br>
+
+                <label>Stock Quantity:</label>
+                <input type="number" name="stock" id="edit-stock"><br>
+
+                <button type="submit">Save Changes</button>
             </form>
         </div>
     </div>
@@ -175,6 +228,29 @@ $username = $_SESSION['username'];
                     });
             }
         }
+    });
+
+    document.querySelectorAll('.INENedit-btn').forEach(button => {
+        button.addEventListener('click', () => {
+            const id = button.dataset.id;
+            const name = button.dataset.name;
+            const category = button.dataset.category;
+            const description = button.dataset.description;
+            const price = button.dataset.price;
+            const stock = button.dataset.stock;
+
+            document.getElementById('edit-id').value = id;
+            document.getElementById('edit-name').value = name;
+            document.getElementById('edit-category').value = category;
+            document.getElementById('edit-description').value = description;
+            document.getElementById('edit-price').value = price;
+            document.getElementById('edit-stock').value = stock;
+
+            document.getElementById('INENeditModal').style.display = 'block';
+        });
+    });
+    document.querySelector('.INENedit-close-btn').addEventListener('click', () => {
+        document.getElementById('INENeditModal').style.display = 'none';
     });
 </script>
 
