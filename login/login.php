@@ -16,20 +16,18 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $stmt->execute();
     $result = $stmt->get_result();
 
-        if ($result->num_rows === 1) {
-            $row = $result->fetch_assoc();
-            if (password_verify($password, $row['password'])) {
-                $_SESSION['staff_id'] = $row['id'];
-                $_SESSION['username'] = $row['username'];
-                $_SESSION['role'] = $row['role'];
+    if ($result->num_rows === 1) {
+        $row = $result->fetch_assoc();
+        if (password_verify($password, $row['password'])) {
+            $_SESSION['staff_id'] = $row['id'];
+            $_SESSION['username'] = $row['username'];
+            $_SESSION['role'] = $row['role'];
 
-                if ($row['role'] === 'admin') $successRedirect = '../admin/dashboard.php';
-                elseif ($row['role'] === 'cashier') $successRedirect = '../cashier/pos.php';
-                elseif ($row['role'] === 'encoder') $successRedirect = '../encoder/ENdashboard.php';
-                elseif ($row['role'] === 'manager') $successRedirect = '../manager/dashboard.php';
-                else $successRedirect = 'dashboard.php';
-                
-            } else {
+            if ($row['role'] === 'admin') $successRedirect = '../admin/dashboard.php';
+            elseif ($row['role'] === 'cashier') $successRedirect = '../cashier/cashierdashboard.php';
+            elseif ($row['role'] === 'encoder') $successRedirect = '../encoder/ENdashboard.php';
+            elseif ($row['role'] === 'manager') $successRedirect = '../manager/dashboard.php';
+            else $successRedirect = 'dashboard.php';
 
             // Check customer table
             $sql2 = "SELECT * FROM customers WHERE username = ?";
