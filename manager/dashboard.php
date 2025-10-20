@@ -1,5 +1,5 @@
 <?php
-include __DIR__ . '/../config/db_connect.php';
+include __DIR__ . '../../config/db_connect.php';
 
 session_start();
 
@@ -44,7 +44,8 @@ if ($res && $res instanceof mysqli_result) {
     $res->free();
     flush_results($conn);
 } else {
-    $q = "SELECT (SELECT COUNT(*) FROM products WHERE status='active') AS total_products,
+    // products table uses `product_status` (1 = active) while users and sales use `status` strings
+    $q = "SELECT (SELECT COUNT(*) FROM products WHERE product_status = 1) AS total_products,
                  (SELECT COUNT(*) FROM users WHERE status='active' AND role!='manager') AS total_users,
                  (SELECT COUNT(*) FROM sales WHERE status IN ('approved','completed')) AS total_orders,
                  (SELECT IFNULL(SUM(sale_amount),0) FROM sales WHERE status='completed') AS total_sales";
