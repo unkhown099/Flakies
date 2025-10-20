@@ -22,7 +22,7 @@ $whereSQL = $whereClauses ? "WHERE " . implode(' AND ', $whereClauses) : "";
 // Count total for pagination
 $totalQuery = "SELECT COUNT(*) as total 
                FROM account_actions 
-               JOIN staff ON account_actions.staff_id = staff.id 
+               JOIN staff ON account_actions.id = staff.id 
                $whereSQL";
 
 $totalResult = $conn->query($totalQuery);
@@ -36,7 +36,7 @@ $totalPages = ceil($total / $limit);
 // Fetch actions
 $sql = "SELECT account_actions.*, staff.name, staff.role 
         FROM account_actions 
-        JOIN staff ON account_actions.staff_id = staff.id 
+        JOIN staff ON account_actions.id = staff.id 
         $whereSQL
         ORDER BY account_actions.action_time DESC 
         LIMIT $limit OFFSET $offset";

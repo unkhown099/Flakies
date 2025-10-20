@@ -71,9 +71,23 @@ if ($result) {
         }
 
         .logo {
-            font-size: 1.8rem;
-            font-weight: 800;
-            letter-spacing: -1px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+        }
+
+        .logo img {
+            height: 45px;
+            width: 45px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .logo span {
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: #f4e04d;
         }
 
         .nav-info {
@@ -349,6 +363,27 @@ if ($result) {
             font-weight: 600;
         }
 
+        .auth-btn {
+        display: inline-block;
+        padding: 0.5rem 1.2rem;
+        border-radius: 50px;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        border: 2px solid #f4e04d;
+        }
+
+        .login-btn {
+            background: transparent;
+            color: #f4e04d;
+        }
+
+        .login-btn:hover {
+            background: #f4e04d;
+            color: #2d2d2d;
+        }
+
+
         @media (max-width: 768px) {
             .orders-grid {
                 grid-template-columns: 1fr;
@@ -367,7 +402,10 @@ if ($result) {
 </head>
 <body>
     <nav>
-        <div class="logo">🌺 Flakies Kitchen</div>
+        <div class="logo">
+            <img src="../assets/pictures/45b0e7c9-8bc1-4ef3-bac2-cfc07174d613.png" alt="Flakies Logo">
+            <span>Flakies</span>
+        </div>
         <div class="nav-info">
             <div class="time" id="currentTime"></div>
             <div class="stats">
@@ -378,6 +416,7 @@ if ($result) {
                     <?php echo $preparingCount; ?> Preparing
                 </div>
             </div>
+            <a href="../login/logout.php" class="auth-btn login-btn">Logout</a>
         </div>
     </nav>
 

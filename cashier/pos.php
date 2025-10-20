@@ -18,15 +18,15 @@ $orderData = $orderResult->fetch_assoc();
 $totalOrders = $orderData['total_orders'] ?? 0;
 
 // Fetch products, add-ons, drinks
-$productQuery = "SELECT id, name, price, stock, image, product_status FROM products WHERE category != 'addon' AND category != 'drink'";
+$productQuery = "SELECT id, name, price, stock, image, status FROM products WHERE category != 'addon' AND category != 'drink'";
 $productResult = $conn->query($productQuery);
 $products = $productResult->fetch_all(MYSQLI_ASSOC);
 
-$addonQuery = "SELECT id, name, price, stock, image, product_status FROM products WHERE category = 'addon'";
+$addonQuery = "SELECT id, name, price, stock, image, status FROM products WHERE category = 'addon'";
 $addonResult = $conn->query($addonQuery);
 $addons = $addonResult->fetch_all(MYSQLI_ASSOC);
 
-$drinkQuery = "SELECT id, name, price, stock, image, product_status FROM products WHERE category = 'drink'";
+$drinkQuery = "SELECT id, name, price, stock, image, status FROM products WHERE category = 'drink'";
 $drinkResult = $conn->query($drinkQuery);
 $drinks = $drinkResult->fetch_all(MYSQLI_ASSOC);
 ?>
