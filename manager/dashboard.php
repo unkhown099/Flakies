@@ -1,6 +1,6 @@
 <?php
 session_start();
-include __DIR__ . '/../db.php';
+include __DIR__ . '/../config/db_connect.php';
 
 if (!isset($_SESSION['user_id']) || ($_SESSION['role'] ?? '') !== 'manager') {
     header("Location: ../login.php");
@@ -202,7 +202,7 @@ foreach ($recent_orders as $ro) {
     <meta charset="utf-8">
     <title>Flakies | Manager Dashboard</title>
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <link rel="icon" href="../assets/pictures/45b0e7c9-8bc1-4ef3-bac2-cfc07174d613.png">
+    <link rel="icon" href="C:\xampp\htdocs\Flakies\assets\pictures\45b0e7c9-8bc1-4ef3-bac2-cfc07174d613.png">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
