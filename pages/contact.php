@@ -454,7 +454,7 @@ if ($customer_id) {
         <ul class="nav-links">
             <li><a href="../index.php">Home</a></li>
             <li><a href="./menu.php">Menu</a></li>
-            <li><a href="./about.php">about</a></li>
+            <li><a href="./about.php">About</a></li>
 
             <?php if (isset($_SESSION['customer_id'])): ?>
                 <li>
