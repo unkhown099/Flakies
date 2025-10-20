@@ -1,12 +1,15 @@
 <?php
-session_start();
 include __DIR__ . '/../config/db_connect.php';
 
-if (!isset($_SESSION['user_id']) || ($_SESSION['role'] ?? '') !== 'manager') {
+session_start();
+
+// ✅ FIX: use staff_id consistently and correct role check
+if (!isset($_SESSION['staff_id']) || ($_SESSION['role'] ?? '') !== 'manager') {
     header("Location: ../login.php");
     exit;
 }
-$manager_id = (int) $_SESSION['user_id'];
+
+$manager_id = (int) $_SESSION['staff_id']; // ✅ fixed: was user_id before
 
 function flush_results($conn)
 {
@@ -15,7 +18,7 @@ function flush_results($conn)
 
 /* fetch manager */
 $manager = ['name' => 'Manager', 'profile_picture' => '../assets/pictures/default.png'];
-if ($stmt = $conn->prepare("SELECT name, profile_picture FROM users WHERE id = ?")) {
+if ($stmt = $conn->prepare("SELECT name, profile_picture FROM staff WHERE id = ?")) {
     $stmt->bind_param("i", $manager_id);
     $stmt->execute();
     $res = $stmt->get_result();
@@ -28,7 +31,6 @@ function call_proc($conn, $sql)
 {
     $res = $conn->query($sql);
     if ($res === false) return false;
-    // if multiple result sets, return the first result set
     if ($res instanceof mysqli_result) return $res;
     flush_results($conn);
     return false;
