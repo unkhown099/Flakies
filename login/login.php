@@ -9,38 +9,26 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $username = trim($_POST['username']);
     $password = trim($_POST['password']);
 
-    // Validate required
-    if ($username === '' || $password === '') {
-        $error = "❌ Username and password are required.";
-    } else {
-        // Check staff table first
-        $sql = "SELECT * FROM staff WHERE username = ?";
-        $stmt = $conn->prepare($sql);
-        $stmt->bind_param("s", $username);
-        $stmt->execute();
-        $result = $stmt->get_result();
+    // Check staff table first
+    $sql = "SELECT * FROM staff WHERE username = ?";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("s", $username);
+    $stmt->execute();
+    $result = $stmt->get_result();
 
-        if ($result->num_rows === 1) {
-            $row = $result->fetch_assoc();
-            if (password_verify($password, $row['password'])) {
-                // successful staff login
-                session_regenerate_id(true);
-                $_SESSION['user_id']   = $row['id'];   // required by other pages
-                $_SESSION['staff_id']  = $row['id'];   // keep existing key if used elsewhere
-                $_SESSION['username']  = $row['username'];
-                $_SESSION['role']      = $row['role'];
+    if ($result->num_rows === 1) {
+        $row = $result->fetch_assoc();
+        if (password_verify($password, $row['password'])) {
+            $_SESSION['staff_id'] = $row['id'];
+            $_SESSION['username'] = $row['username'];
+            $_SESSION['role'] = $row['role'];
 
-                if ($row['role'] === 'admin') $successRedirect = '../admin/dashboard.php';
-                elseif ($row['role'] === 'cashier') $successRedirect = 'pos.php';
-                elseif ($row['role'] === 'encoder') $successRedirect = '../encoder/ENdashboard.php';
-                elseif ($row['role'] === 'manager') $successRedirect = 'reports.php';
-                else $successRedirect = 'dashboard.php';
+            if ($row['role'] === 'admin') $successRedirect = '../admin/dashboard.php';
+            elseif ($row['role'] === 'cashier') $successRedirect = '../cashier/pos.php';
+            elseif ($row['role'] === 'encoder') $successRedirect = '../encoder/ENdashboard.php';
+            elseif ($row['role'] === 'manager') $successRedirect = '../manager/dashboard.php';
+            else $successRedirect = 'dashboard.php';
 
-                header("Location: $successRedirect");
-                exit;
-            } else {
-                $error = "❌ Invalid password.";
-            }
         } else {
             // Check customer table
             $sql2 = "SELECT * FROM customers WHERE username = ?";
@@ -63,6 +51,26 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             } else {
                 $error = "❌ No user found with that username.";
             }
+        }
+    } else {
+        // Check customer table
+        $sql2 = "SELECT * FROM customers WHERE username = ?";
+        $stmt2 = $conn->prepare($sql2);
+        $stmt2->bind_param("s", $username);
+        $stmt2->execute();
+        $result2 = $stmt2->get_result();
+
+        if ($result2->num_rows === 1) {
+            $row2 = $result2->fetch_assoc();
+            if (password_verify($password, $row2['password'])) {
+                $_SESSION['customer_id'] = $row2['id'];
+                $_SESSION['customer_username'] = $row2['username'];
+                $successRedirect = '../index.php';
+            } else {
+                $error = "❌ Invalid password.";
+            }
+        } else {
+            $error = "❌ No user found with that username.";
         }
     }
 }

@@ -1,26 +1,76 @@
 <?php
-require 'db_connect.php';
+require '../config/db_connect.php';
+require '../vendor/autoload.php';
+
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\Exception;
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $username = trim($_POST['username']);
+    $email = trim($_POST['email']);
 
-    // Find user
-    $stmt = $conn->prepare("SELECT * FROM staff WHERE username = ? LIMIT 1");
-    $stmt->bind_param("s", $username);
+    $stmt = $conn->prepare("SELECT * FROM customers WHERE email = ? LIMIT 1");
+    $stmt->bind_param("s", $email);
     $stmt->execute();
     $result = $stmt->get_result();
 
+    echo '<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>';
+
     if ($result->num_rows === 1) {
-        $newPassword = substr(str_shuffle("abcdefghijklmnopqrstuvwxyz0123456789"), 0, 8);
+        $newPassword = substr(str_shuffle("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"), 0, 8);
         $hashed = password_hash($newPassword, PASSWORD_DEFAULT);
 
-        $update = $conn->prepare("UPDATE staff SET password=? WHERE username=?");
-        $update->bind_param("ss", $hashed, $username);
+        $update = $conn->prepare("UPDATE customers SET password=? WHERE email=?");
+        $update->bind_param("ss", $hashed, $email);
         $update->execute();
 
-        echo "<script>alert('Your password has been reset. New password: $newPassword'); window.location='login.php';</script>";
+        $mail = new PHPMailer(true);
+        try {
+            $mail->isSMTP();
+            $mail->Host = 'smtp.gmail.com';
+            $mail->SMTPAuth = true;
+            $mail->Username = 'flakies050@gmail.com';
+            $mail->Password = 'mpqw ieiz exil xnob';
+            $mail->SMTPSecure = 'tls';
+            $mail->Port = 587;
+
+            $mail->setFrom('flakies050@gmail.com', 'Flakies Support');
+            $mail->addAddress($email);
+
+            $mail->isHTML(true);
+            $mail->Subject = 'Flakies Password Reset';
+            $mail->Body = "Your password has been reset. Your new temporary password is: <b>$newPassword</b>. Please login and change it immediately.";
+
+            $mail->send();
+
+            echo "<script>
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Email Sent!',
+                    text: 'A new password has been sent to your email.',
+                    confirmButtonText: 'OK'
+                }).then(() => {
+                    window.location = 'login.php';
+                });
+            </script>";
+        } catch (Exception $e) {
+            echo "<script>
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error!',
+                    text: 'Password reset failed. Please try again later.',
+                    confirmButtonText: 'OK'
+                });
+            </script>";
+        }
     } else {
-        echo "<script>alert('User not found.'); window.location='forgot_password.php';</script>";
+        echo "<script>
+            Swal.fire({
+                icon: 'warning',
+                title: 'Email Not Found',
+                text: 'No account is registered with this email.',
+                confirmButtonText: 'OK'
+            });
+        </script>";
     }
 }
 ?>
@@ -29,25 +79,143 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Forgot Password | Flakies</title>
-    <link rel="stylesheet" href="assets/login.css">
+    <title>Flakies | Forgot Password</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        body {
+            font-family: "Poppins", sans-serif;
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(135deg, #fff9e6 0%, #f6e27a 40%, #d9ed42 100%);
+            background-attachment: fixed;
+        }
+
+        .login-card {
+            background: #fff;
+            width: 380px;
+            padding: 40px 35px;
+            border-radius: 18px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+            text-align: center;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .login-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 35px rgba(0, 0, 0, 0.25);
+        }
+
+        .logo-container {
+            margin-bottom: 15px;
+        }
+
+        .logo-container img {
+            width: 75px;
+            height: 75px;
+            border-radius: 50%;
+            object-fit: cover;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .logo-text {
+            font-size: 28px;
+            font-weight: 800;
+            color: #000;
+            letter-spacing: 1px;
+            background: linear-gradient(90deg, #d39e2a, #e0d979);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .welcome {
+            font-size: 14px;
+            color: #555;
+            margin-bottom: 25px;
+        }
+
+        .input-group {
+            position: relative;
+            margin-bottom: 18px;
+        }
+
+        input[type="email"] {
+            width: 85%;
+            padding: 12px 15px;
+            border: 1px solid #ccc;
+            border-radius: 10px;
+            font-size: 15px;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        input:focus {
+            border-color: #d39e2a;
+            box-shadow: 0 0 6px rgba(211, 158, 42, 0.4);
+        }
+
+        .btn-login {
+            width: 100%;
+            background: linear-gradient(135deg, #d9ed42, #d39e2a);
+            border: none;
+            border-radius: 10px;
+            padding: 12px;
+            color: #000;
+            font-weight: 700;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+        }
+
+        .btn-login:hover {
+            transform: translateY(-2px);
+            background: linear-gradient(135deg, #e0d979, #d39e2a);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.25);
+        }
+
+        .links {
+            margin-top: 20px;
+            display: flex;
+            justify-content: center;
+            font-size: 14px;
+        }
+
+        .links a {
+            text-decoration: none;
+            color: #000;
+            font-weight: 600;
+            transition: color 0.3s ease;
+        }
+
+        .links a:hover {
+            color: #d39e2a;
+        }
+    </style>
 </head>
+
 <body>
-    <div class="login-hero">
-        <div class="login-card">
-            <h1 class="logo">Flakies</h1>
-            <p class="welcome">Reset your password</p>
+    <div class="login-card">
+        <div class="logo-container">
+            <img src="../assets/pictures/45b0e7c9-8bc1-4ef3-bac2-cfc07174d613.png" alt="Flakies Logo">
+        </div>
 
-            <form action="forgot_password.php" method="POST" class="login-form">
-                <div class="input-group">
-                    <input type="text" name="username" placeholder="Enter your username" required>
-                </div>
-                <button type="submit" class="btn-login">Reset Password</button>
-            </form>
+        <h1 class="logo-text">Flakies</h1>
+        <p class="welcome">Reset your password</p>
 
-            <div class="links">
-                <a href="login.php">Back to Login</a>
+        <form action="forgot_password.php" method="POST">
+            <div class="input-group">
+                <input type="email" name="email" placeholder="Enter your email" required>
             </div>
+            <button type="submit" class="btn-login">Reset Password</button>
+        </form>
+
+        <div class="links">
+            <a href="login.php">← Back to Login</a>
         </div>
     </div>
 </body>
