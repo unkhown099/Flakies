@@ -26,7 +26,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             if ($row['role'] === 'admin') $successRedirect = '../admin/dashboard.php';
             elseif ($row['role'] === 'cashier') $successRedirect = 'pos.php';
             elseif ($row['role'] === 'encoder') $successRedirect = '../encoder/ENdashboard.php';
-            elseif ($row['role'] === 'manager') $successRedirect = 'reports.php';
+            elseif ($row['role'] === 'manager') $successRedirect = '../manager/dashboard.php';
             else $successRedirect = 'dashboard.php';
 
         } else {

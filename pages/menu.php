@@ -160,6 +160,22 @@ if ($customer_id) {
             color: #2d2d2d;
         }
 
+        .profile-link {
+        display: inline-block;
+        width: 35px;
+        height: 35px;
+        border-radius: 50%;
+        overflow: hidden;
+        margin-left: 10px;
+        }
+
+        .profile-link .profile-pic {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 50%;
+        }
+
         .container {
             max-width: 1200px;
             margin: 0 auto;
@@ -352,6 +368,12 @@ if ($customer_id) {
                     </a>
                 </li>
                 <li><a href="/login/logout.php" class="auth-btn login-btn">Logout</a></li>
+                <li>
+                <a href="./profile.php" class="profile-link">
+                    <img src="<?php echo $_SESSION['profile_picture'] ?? '../assets/pictures/default-profile.png'; ?>" 
+                         alt="Profile" class="profile-pic">
+                </a>
+            </li>
             <?php else: ?>
                 <li><a href="../login/login.php" class="auth-btn login-btn">Login</a></li>
                 <li><a href="../login/register.php" class="auth-btn register-btn">Register</a></li>

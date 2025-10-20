@@ -188,7 +188,7 @@ if ($customer_id) {
         border-radius: 50%;
         overflow: hidden;
         margin-left: 10px;
-}
+        }
 
         .profile-link .profile-pic {
             width: 100%;

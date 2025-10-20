@@ -166,6 +166,22 @@ $finalTotal = $total + $deliveryFee;
             transform: scale(1.05);
         }
 
+        .profile-link {
+        display: inline-block;
+        width: 35px;
+        height: 35px;
+        border-radius: 50%;
+        overflow: hidden;
+        margin-left: 10px;
+        }
+
+        .profile-link .profile-pic {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 50%;
+        }
+
         .container {
             max-width: 1200px;
             margin: 0 auto;
@@ -473,6 +489,12 @@ $finalTotal = $total + $deliveryFee;
             <li><a href="contact.php">Contact</a></li>
             <li><button class="cart-btn">🛒 Cart (<?php echo count($cartItems); ?>)</button></li>
             <li><a href="../login/logout.php" class="auth-btn login-btn">Logout</a></li>
+            <li>
+                <a href="./profile.php" class="profile-link">
+                    <img src="<?php echo $_SESSION['profile_picture'] ?? '../assets/pictures/default-profile.png'; ?>" 
+                         alt="Profile" class="profile-pic">
+                </a>
+            </li>
         </ul>
     </nav>
 

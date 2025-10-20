@@ -11,6 +11,11 @@ if (!isset($_SESSION['customer_id'])) {
 }
 
 $customer_id = $_SESSION['customer_id'];
+
+// Fetch cart count
+$cartQuery = $conn->query("SELECT SUM(quantity) AS total_items FROM cart WHERE customer_id = $customer_id");
+$cartData = $cartQuery->fetch_assoc();
+$cart_count = $cartData['total_items'] ?? 0;
 $message = '';
 $messageType = ''; // 'success' or 'error'
 
@@ -24,7 +29,7 @@ $customer = $customerQuery->fetch_assoc();
 
 // Handle profile update
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
-    
+
     if ($_POST['action'] === 'update_info') {
         $first_name = $conn->real_escape_string(trim($_POST['first_name'] ?? ''));
         $middle_name = $conn->real_escape_string(trim($_POST['middle_name'] ?? ''));
@@ -46,7 +51,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                             address = '$address',
                             updated_at = NOW()
                             WHERE id = $customer_id";
-            
+
             if ($conn->query($updateQuery)) {
                 $message = "Profile updated successfully!";
                 $messageType = 'success';
@@ -78,7 +83,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
         } else {
             $hashedPassword = password_hash($new_password, PASSWORD_DEFAULT);
             $updateQuery = "UPDATE customers SET password = '$hashedPassword', updated_at = NOW() WHERE id = $customer_id";
-            
+
             if ($conn->query($updateQuery)) {
                 $message = "Password changed successfully!";
                 $messageType = 'success';
@@ -109,6 +114,7 @@ if ($ordersQuery) {
 ?>
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -133,7 +139,7 @@ if ($ordersQuery) {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            box-shadow: 0 2px 20px rgba(0,0,0,0.3);
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.3);
         }
 
         .logo {
@@ -176,6 +182,25 @@ if ($ordersQuery) {
             transform: scale(1.05);
         }
 
+        .cart-link {
+            position: relative;
+            display: inline-block;
+        }
+
+        .cart-badge {
+            position: absolute;
+            top: -8px;
+            right: -12px;
+            background: #f56565;
+            color: white;
+            font-size: 11px;
+            font-weight: bold;
+            padding: 2px 6px;
+            border-radius: 50%;
+            min-width: 20px;
+            text-align: center;
+        }
+
         .container {
             max-width: 1200px;
             margin: 0 auto;
@@ -187,7 +212,7 @@ if ($ordersQuery) {
             border-radius: 20px;
             padding: 2.5rem;
             margin-bottom: 2rem;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -205,14 +230,50 @@ if ($ordersQuery) {
         }
 
         .user-avatar {
-            width: 80px;
-            height: 80px;
+            position: relative;
+            width: 90px;
+            height: 90px;
             border-radius: 50%;
+            overflow: hidden;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
             background: linear-gradient(135deg, #f4e04d 0%, #d4a942 100%);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 2.5rem;
+        }
+
+        .user-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .user-avatar:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 20px rgba(212, 169, 66, 0.5);
+        }
+
+        .user-avatar::after {
+            content: "📸 Change";
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            color: white;
+            text-align: center;
+            font-size: 0.8rem;
+            padding: 4px 0;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            border-bottom-left-radius: 50%;
+            border-bottom-right-radius: 50%;
+        }
+
+        .user-avatar:hover::after {
+            opacity: 1;
         }
 
         .message {
@@ -245,7 +306,7 @@ if ($ordersQuery) {
             background: white;
             border-radius: 20px;
             padding: 2rem;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
         }
 
         .section h2 {
@@ -278,7 +339,8 @@ if ($ordersQuery) {
             font-size: 0.95rem;
         }
 
-        input, textarea {
+        input,
+        textarea {
             width: 100%;
             padding: 0.8rem;
             border: 2px solid #e0e0e0;
@@ -289,7 +351,8 @@ if ($ordersQuery) {
             transition: border-color 0.3s;
         }
 
-        input:focus, textarea:focus {
+        input:focus,
+        textarea:focus {
             outline: none;
             border-color: #d4a942;
             box-shadow: 0 0 0 3px rgba(212, 169, 66, 0.1);
@@ -363,7 +426,7 @@ if ($ordersQuery) {
 
         .order-card:hover {
             background: #f0f0f0;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
         }
 
         .order-header {
@@ -464,14 +527,22 @@ if ($ordersQuery) {
         }
     </style>
 </head>
+
 <body>
     <nav>
         <div class="logo">🌺 Flakies</div>
         <ul class="nav-links">
             <li><a href="../index.html">Home</a></li>
             <li><a href="menu.php">Menu</a></li>
-            <li><a href="cart.php">Cart</a></li>
             <li><a href="about.php">About</a></li>
+            <li>
+                <a href="cart.php" class="cart-link">
+                    🛒
+                    <?php if ($cart_count > 0): ?>
+                        <span class="cart-badge"><?php echo $cart_count; ?></span>
+                    <?php endif; ?>
+                </a>
+            </li>
             <li><button class="logout-btn" onclick="logout()">Logout</button></li>
         </ul>
     </nav>
@@ -482,7 +553,22 @@ if ($ordersQuery) {
                 <h1>Welcome, <?php echo htmlspecialchars($customer['first_name']); ?>! 👋</h1>
                 <p>Member since <?php echo date('F Y', strtotime($customer['created_at'])); ?></p>
             </div>
-            <div class="user-avatar">👤</div>
+                <div class="user-avatar">
+                    <form id="avatarForm" action="upload_avatar.php" method="POST" enctype="multipart/form-data">
+                        <label for="avatarInput">
+                            <?php if (!empty($customer['profile_picture'])): ?>
+                                <img src="../assets/pictures/<?php echo htmlspecialchars($customer['profile_picture']); ?>" 
+                                    alt="Profile Picture" 
+                                    style="width: 60px; height: 60px; border-radius: 50%; object-fit: cover; cursor: pointer;">
+                            <?php else: ?>
+                                <div style="width: 60px; height: 60px; border-radius: 50%; background-color: #ccc; display: flex; align-items: center; justify-content: center; font-size: 28px; cursor: pointer;">
+                                    👤
+                                </div>
+                            <?php endif; ?>
+                        </label>
+                        <input type="file" name="avatar" id="avatarInput" accept="image/*" style="display: none;" onchange="document.getElementById('avatarForm').submit();">
+                    </form>
+                </div>
         </div>
 
         <?php if ($message): ?>
@@ -497,7 +583,7 @@ if ($ordersQuery) {
                 <h2>📋 Basic Information</h2>
                 <form method="POST">
                     <input type="hidden" name="action" value="update_info">
-                    
+
                     <div class="form-row">
                         <div class="form-group">
                             <label for="first_name">First Name <span class="required">*</span></label>
@@ -538,7 +624,7 @@ if ($ordersQuery) {
                 <h2>🔒 Password Management</h2>
                 <form method="POST">
                     <input type="hidden" name="action" value="change_password">
-                    
+
                     <div class="form-group">
                         <label for="current_password">Current Password <span class="required">*</span></label>
                         <input type="password" id="current_password" name="current_password" required>
@@ -575,7 +661,7 @@ if ($ordersQuery) {
             <!-- Order History Section -->
             <div class="section orders-section">
                 <h2>📦 Order History</h2>
-                
+
                 <?php if (empty($orders)): ?>
                     <div class="empty-orders">
                         <div style="font-size: 2rem; margin-bottom: 0.5rem;">🛒</div>
@@ -614,9 +700,10 @@ if ($ordersQuery) {
     <script>
         function logout() {
             if (confirm('Are you sure you want to logout?')) {
-                window.location.href = '../logout.php';
+                window.location.href = '../login/logout.php';
             }
         }
     </script>
 </body>
+
 </html>
