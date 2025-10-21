@@ -17,7 +17,7 @@ $password = $_POST['password'] ?? '';
 if (!$username || !$name || !$role) { echo json_encode(['status'=>'error','message'=>'Missing fields']); exit; }
 
 // check valid role
-$valid_roles = ['admin','manager','encoder','cashier','inventory_clerk'];
+$valid_roles = ['admin','manager','encoder','cashier','kitchen','inventory_clerk'];
 if (!in_array($role, $valid_roles)) {
     echo json_encode(['status'=>'error','message'=>'Invalid role']); exit;
 }

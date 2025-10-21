@@ -145,7 +145,7 @@ setInterval(updateDateTime, 1000); updateDateTime();
     <h4>Available Products</h4>
     <div class="row g-3" id="productList">
     <?php foreach ($products as $product):
-        $isInactive = $product['product_status'] == 1;
+        $isInactive = $product['status'] == 1;
         $isOutOfStock = $product['stock'] <= 0;
         $disabled = $isInactive || $isOutOfStock;
         $cardClass = $disabled ? 'bg-secondary text-white disabled-card' : 'product-card';

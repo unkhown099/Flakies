@@ -1,43 +1,74 @@
 <?php
-// kitchen.php - Kitchen Dashboard for Flakies
-
-// Include database connection
 require_once '../config/db_connect.php';
+session_start();
 
-// Fetch active orders
-$result = $conn->query("CALL GetActiveOrders()");
+// Session validation
+if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'kitchen') {
+    header("Location: ../login.php");
+    exit;
+}
+
+// Fetch filter if any (pending, preparing, ready)
+$filter = isset($_GET['filter']) ? $_GET['filter'] : '';
+
+// ✅ Step 1: Fetch active orders (include pending)
+$sql = "SELECT o.id, o.customer_id, o.total_amount, o.status, o.order_date,
+               c.first_name AS customer_name, c.phone AS customer_phone,
+               TIMESTAMPDIFF(MINUTE, o.order_date, NOW()) AS elapsed_minutes
+        FROM orders o
+        LEFT JOIN customers c ON o.customer_id = c.id
+        WHERE o.status IN ('pending','preparing','ready')";
+
+if ($filter) {
+    $sql .= " AND o.status = '" . $conn->real_escape_string($filter) . "'";
+}
+
+$sql .= " ORDER BY o.order_date DESC";
+
 $orders = [];
+$result = $conn->query($sql);
 if ($result) {
     while ($row = $result->fetch_assoc()) {
         $orders[] = $row;
     }
-    $conn->next_result();
 }
 
-// Get order items for each order
+// ✅ Step 2: Fetch items for each order
 foreach ($orders as &$order) {
     $orderId = $order['id'];
-    $itemsResult = $conn->query("CALL GetOrderItems($orderId)");
-    $order['items'] = [];
+    $items = [];
+    $itemsQuery = "
+        SELECT p.name AS product_name, oi.quantity, o.notes
+        FROM order_items oi
+        INNER JOIN products p ON oi.product_id = p.id
+        INNER JOIN orders o ON oi.order_id = o.id
+        WHERE oi.order_id = $orderId
+    ";
+    $itemsResult = $conn->query($itemsQuery);
     if ($itemsResult) {
         while ($item = $itemsResult->fetch_assoc()) {
-            $order['items'][] = $item;
+            $item['emoji'] = '🍽️';
+            $items[] = $item;
         }
-        // Clear remaining results after stored procedure
-        $conn->next_result();
     }
+    $order['items'] = $items;
 }
 
-// Count orders by status
-$result = $conn->query("CALL GetOrderStatusCounts()");
-$newCount = 0;
+// ✅ Step 3: Count orders by status
+$pendingCount = 0;
 $preparingCount = 0;
-if ($result) {
-    while ($row = $result->fetch_assoc()) {
-        if ($row['status'] === 'new') $newCount = $row['count'];
+$countQuery = "
+    SELECT status, COUNT(*) AS count 
+    FROM orders 
+    WHERE status IN ('pending','preparing') 
+    GROUP BY status
+";
+$countResult = $conn->query($countQuery);
+if ($countResult) {
+    while ($row = $countResult->fetch_assoc()) {
+        if ($row['status'] === 'pending') $pendingCount = $row['count'];
         if ($row['status'] === 'preparing') $preparingCount = $row['count'];
     }
-    $conn->next_result();
 }
 ?>
 <!DOCTYPE html>
@@ -410,7 +441,7 @@ if ($result) {
             <div class="time" id="currentTime"></div>
             <div class="stats">
                 <div class="stat-badge">
-                    <?php echo $newCount; ?> Pending
+                    <?php echo $pendingCount; ?> Pending
                 </div>
                 <div class="stat-badge">
                     <?php echo $preparingCount; ?> Preparing
@@ -428,7 +459,7 @@ if ($result) {
 
         <div class="filter-tabs">
             <a href="kitchen.php" class="tab active">All Orders</a>
-            <a href="kitchen.php?filter=new" class="tab">New</a>
+            <a href="kitchen.php?filter=pending" class="tab">New</a>
             <a href="kitchen.php?filter=preparing" class="tab">Preparing</a>
             <a href="kitchen.php?filter=ready" class="tab">Ready</a>
         </div>
@@ -456,7 +487,7 @@ if ($result) {
                         <div class="order-status status-<?php echo $order['status']; ?>">
                             <?php
                             switch($order['status']) {
-                                case 'new':
+                                case 'pending':
                                     echo '🔔 New Order';
                                     break;
                                 case 'preparing':
@@ -492,7 +523,7 @@ if ($result) {
 
                         <div class="order-actions">
                             <div class="order-actions">
-                                <?php if ($order['status'] === 'new'): ?>
+                                <?php if ($order['status'] === 'pending'): ?>
                                     <button class="action-btn btn-accept updateStatus" data-id="<?php echo $order['id']; ?>" data-status="preparing">
                                         Accept Order
                                     </button>
@@ -512,65 +543,120 @@ if ($result) {
             <?php endif; ?>
         </div>
     </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-    <script>
-        // Update current time
-        function updateTime() {
-            const now = new Date();
-            const timeString = now.toLocaleTimeString('en-US', { 
-                hour: '2-digit', 
-                minute: '2-digit',
-                hour12: true 
-            });
-            document.getElementById('currentTime').textContent = timeString;
-        }
-        updateTime();
-        setInterval(updateTime, 1000);
-
-        // Auto-refresh every 30 seconds to check for new orders
-        setInterval(function() {
-            location.reload();
-        }, 30000);
-    </script>
-    <script>
-        document.addEventListener('click', function(e) {
-        if (e.target.classList.contains('updateStatus')) {
-            const id = e.target.dataset.id;
-            const status = e.target.dataset.status;
-
-            fetch('update_status.php', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-            body: `id=${id}&status=${status}`
-            })
-            .then(res => res.text())
-            .then(msg => {
-            alert(msg);
-            location.reload();
-            })
-            .catch(() => alert('Failed to update order status.'));
-        }
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Update current time
+    function updateTime() {
+        const now = new Date();
+        const timeString = now.toLocaleTimeString('en-US', {
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: true
         });
-    </script>
-    <script>
-    function updateStatus(orderId, action) {
-        fetch('update_status.php', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-            body: `order_id=${orderId}&action=${action}`
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                // Reload the page or dynamically update the status
-                alert('Order updated to ' + action + '!');
-                location.reload(); 
-            } else {
-                alert('Failed to update order.');
-            }
-        })
-        .catch(error => console.error('Error:', error));
+        const el = document.getElementById('currentTime');
+        if (el) el.textContent = timeString;
     }
+    updateTime();
+    setInterval(updateTime, 1000);
+
+    // Auto-refresh every 30 seconds
+    setInterval(() => {
+        // If you want to avoid losing focus during actions you can skip reload when a modal is open.
+        location.reload();
+    }, 30000);
+
+    // Central handler for update buttons (delegation)
+    document.addEventListener('click', async function(e) {
+        const target = e.target;
+        if (!target.classList.contains('updateStatus')) return;
+
+        const id = target.dataset.id;
+        const status = target.dataset.status;
+
+        if (!id || !status) {
+            console.error('Missing id or status on button', target);
+            Swal.fire({ icon: 'error', title: 'Error', text: 'Invalid request (missing id/status)' });
+            return;
+        }
+
+        // Optional: disable button while request runs
+        target.disabled = true;
+
+        try {
+            const res = await fetch('update_status.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: `id=${encodeURIComponent(id)}&status=${encodeURIComponent(status)}`
+            });
+
+            // Try to parse JSON safely
+            const contentType = res.headers.get('content-type') || '';
+            let data = null;
+
+            if (contentType.includes('application/json')) {
+                // server promises JSON
+                try {
+                    data = await res.json();
+                } catch (jsonErr) {
+                    console.error('Failed to parse JSON response:', jsonErr);
+                    // fallback: read text for debugging
+                    const txt = await res.text();
+                    console.warn('Non-JSON response text:', txt);
+                    throw new Error('Invalid JSON response from server.');
+                }
+            } else {
+                // server did not send JSON (common when PHP emits warnings). We'll try to parse anyway,
+                // but also capture raw text for debugging.
+                const txt = await res.text();
+                console.warn('Response content-type not JSON. Raw response:', txt);
+                // attempt to extract JSON from text (in case PHP prepended warnings then JSON)
+                const jsonStart = txt.indexOf('{');
+                const jsonEnd = txt.lastIndexOf('}');
+                if (jsonStart !== -1 && jsonEnd !== -1 && jsonEnd > jsonStart) {
+                    try {
+                        const maybeJson = txt.slice(jsonStart, jsonEnd + 1);
+                        data = JSON.parse(maybeJson);
+                        console.warn('Extracted JSON from response after trimming warnings.');
+                    } catch (extractErr) {
+                        console.error('Could not extract JSON from response:', extractErr);
+                    }
+                }
+                // if nothing parseable, set data to null and fall through
+            }
+
+            // If server returned JSON with success flag, use it
+            if (data && typeof data === 'object') {
+                if (data.success) {
+                    Swal.fire({ icon: 'success', title: 'Success', text: data.message || 'Order updated', timer: 1400, showConfirmButton: false })
+                        .then(() => location.reload());
+                } else {
+                    Swal.fire({ icon: 'error', title: 'Error', text: data.message || 'Update failed' });
+                }
+            } else {
+                // No usable JSON. decide by HTTP status: 200 -> assume success (since DB changed), else error.
+                if (res.ok) {
+                    Swal.fire({ icon: 'success', title: 'Success', text: 'Order updated (no JSON returned)', timer: 1200, showConfirmButton: false })
+                        .then(() => location.reload());
+                } else {
+                    Swal.fire({ icon: 'error', title: 'Error', text: `Server error: ${res.status} ${res.statusText}` });
+                }
+            }
+        } catch (err) {
+            console.error('Update request failed:', err);
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Failed to update order status. Check console for details.'
+            });
+        } finally {
+            // re-enable button
+            target.disabled = false;
+        }
+    });
+});
 </script>
 </body>
 </html>

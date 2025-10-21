@@ -40,7 +40,7 @@ $username = $_SESSION['username'];
                 </li>
             <?php endif; ?>
             <li>
-                <a href="logout.php" class="logout-link">Logout</a>
+                <a href="../login/logout.php" class="logout-link">Logout</a>
             </li>
         </ul>
     </div>

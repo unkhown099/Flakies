@@ -49,7 +49,7 @@ if ($result && $row = $result->fetch_assoc()) {
                 </li>
             <?php endif; ?>
             <li>
-                <a href="logout.php" class="logout-link">Logout</a>
+                <a href="../login/login.php" class="logout-link">Logout</a>
             </li>
         </ul>
     </div>

@@ -1,6 +1,7 @@
 <?php
 // admin/manage_users.php
 require __DIR__ . '/../config/db_connect.php';
+session_start();
 
 if (!isset($_SESSION['staff_id']) || $_SESSION['role'] !== 'admin') {
   header("Location: ../login.php");
@@ -343,6 +344,10 @@ $staff = $result->fetch_all(MYSQLI_ASSOC);
       background: #a67c00;
     }
 
+    .role.kitchen {
+      background: #7b00ffff;
+    }
+
     .role.inventory_clerk {
       background: #555;
     }
@@ -479,6 +484,7 @@ $staff = $result->fetch_all(MYSQLI_ASSOC);
             <option value="manager">Manager</option>
             <option value="encoder">Encoder</option>
             <option value="cashier">Cashier</option>
+            <option value="kitchen">Kitchen</option>
             <option value="inventory_clerk">Inventory Clerk</option>
           </select>
         </div>

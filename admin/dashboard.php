@@ -1,18 +1,28 @@
 <?php
 session_start();
-if (!isset($_SESSION['staff_id'])) {
-    header("Location: login.php");
+
+// Check if user is logged in
+if (!isset($_SESSION['staff_id']) || !isset($_SESSION['role'])) {
+    header("Location: ../login.php");
+    exit();
+}
+
+// Only allow admin to access this page
+if ($_SESSION['role'] !== 'admin') {
+    echo "Access denied. You must be an admin to view this page.";
     exit();
 }
 
 require __DIR__ . '/../config/db_connect.php';
 
+$staff_id = $_SESSION['staff_id'];
 $role = $_SESSION['role'];
 $username = $_SESSION['username'];
 
 // Group filter (day, month, year)
 $group_by = isset($_GET['group_by']) ? $_GET['group_by'] : 'day';
 
+// Prepare SQL for analytics
 switch ($group_by) {
     case 'month':
         $sql = "SELECT DATE_FORMAT(date, '%Y-%m') AS period, SUM(sale_amount) AS total_sales 
@@ -62,6 +72,7 @@ $formatted_periods = array_map(function ($p) use ($group_by) {
     return formatDate($p, $group_by);
 }, $periods);
 ?>
+
 
 <!DOCTYPE html>
 <html lang="en">
@@ -357,29 +368,41 @@ $formatted_periods = array_map(function ($p) use ($group_by) {
 <body>
     <!-- Sidebar -->
 
-    <div class="sidebar">
-        <div class="logo">
-            <img src="../assets/pictures/45b0e7c9-8bc1-4ef3-bac2-cfc07174d613.png" alt="Flakies Logo">
-            <span>Flakies</span>
-        </div>
-        <div class="welcome">Admin Panel</div>
-        <ul class="menu">
-            <li><a href="dashboard.php">🏠 Dashboard</a></li>
-            <?php if ($role === 'admin'): ?>
-                <li><a href="manage_users.php">👥 Manage Users</a></li>
-                <li><a href="manage_products.php">📦 Manage Products</a></li>
-                <li><a href="manage_report.php">📊 Reports</a></li>
-            <?php elseif ($role === 'manager'): ?>
-                <li><a href="reports.php">📊 Reports</a></li>
-            <?php elseif ($role === 'cashier'): ?>
-                <li><a href="cashier/pos.php">💵 Point of Sale</a></li>
-            <?php elseif ($role === 'encoder'): ?>
-                <li><a href="encoder/inventory.php">📦 Inventory</a></li>
-            <?php endif; ?>
-        </ul>
-        <a href="../login/logout.php" class="btn-logout">🚪 Logout</a>
+<div class="sidebar">
+    <div class="logo">
+        <img src="../assets/pictures/45b0e7c9-8bc1-4ef3-bac2-cfc07174d613.png" alt="Flakies Logo">
+        <span>Flakies</span>
     </div>
+    <div class="welcome">
+        <?php
+        if (isset($role)) {
+            echo ucfirst($role) . " Panel";
+        } else {
+            echo "Dashboard";
+        }
+        ?>
+    </div>
+    <ul class="menu">
+        <li><a href="dashboard.php">🏠 Dashboard</a></li>
 
+        <?php if (isset($role) && $role === 'admin'): ?>
+            <li><a href="manage_users.php">👥 Manage Users</a></li>
+            <li><a href="manage_products.php">📦 Manage Products</a></li>
+            <li><a href="manage_report.php">📊 Reports</a></li>
+
+        <?php elseif (isset($role) && $role === 'manager'): ?>
+            <li><a href="reports.php">📊 Reports</a></li>
+
+        <?php elseif (isset($role) && $role === 'cashier'): ?>
+            <li><a href="cashier/pos.php">💵 Point of Sale</a></li>
+
+        <?php elseif (isset($role) && $role === 'encoder'): ?>
+            <li><a href="encoder/inventory.php">📦 Inventory</a></li>
+        <?php endif; ?>
+    </ul>
+
+    <a href="../login/logout.php" class="btn-logout">🚪 Logout</a>
+</div>
 
 
     <!-- Main Content -->

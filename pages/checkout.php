@@ -50,56 +50,56 @@ if (empty($cartItems)) {
     exit;
 }
 
-$tax = 0; // No tax
-$deliveryFee = 50; // Fixed delivery fee
+$deliveryFee = 10; // Fixed delivery fee
 $total = $subtotal + $deliveryFee;
 
-// Handle order placement
+/// Handle order placement
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['place_order'])) {
     $delivery_address = $conn->real_escape_string(trim($_POST['delivery_address']));
     $phone = $conn->real_escape_string(trim($_POST['phone']));
-    $payment_method = $conn->real_escape_string($_POST['payment_method']);
+    $payment_method = $_POST['payment_method'] === 'cod' ? 'cash' : 'gcash';
+    $payment_method = $conn->real_escape_string($payment_method);
     $notes = $conn->real_escape_string(trim($_POST['notes'] ?? ''));
 
     if (empty($delivery_address) || empty($phone)) {
         $message = "Please fill in all required fields.";
         $messageType = 'error';
     } else {
-        // Start transaction
         $conn->begin_transaction();
-        
         try {
-            // Insert order
-            $orderQuery = "INSERT INTO orders (customer_id, total, status, delivery_address, phone, payment_method, notes, order_date, created_at) 
-                          VALUES ($customer_id, $total, 'new', '$delivery_address', '$phone', '$payment_method', '$notes', NOW(), NOW())";
-            
+            // Insert order (fixed)
+            $orderQuery = "INSERT INTO orders 
+                (customer_id, total_amount, status, delivery_address, phone, payment_method, notes) 
+                VALUES ($customer_id, $total, 'pending', '$delivery_address', '$phone', '$payment_method', '$notes')";
+
+
+
             if ($conn->query($orderQuery)) {
                 $order_id = $conn->insert_id;
-                
+
                 // Insert order items from cart
                 foreach ($cartItems as $item) {
                     $product_id = $item['product_id'];
                     $quantity = $item['quantity'];
                     $price = $item['price'];
-                    
+
                     $itemQuery = "INSERT INTO order_items (order_id, product_id, quantity, price) 
-                                 VALUES ($order_id, $product_id, $quantity, $price)";
+                                  VALUES ($order_id, $product_id, $quantity, $price)";
                     $conn->query($itemQuery);
                 }
-                
+
                 // Clear cart
                 $conn->query("DELETE FROM cart WHERE customer_id = $customer_id");
-                
-                // Commit transaction
+
                 $conn->commit();
-                
-                // Redirect to success page
                 header("Location: order_success.php?order_id=$order_id");
                 exit;
+            } else {
+                throw new Exception($conn->error);
             }
         } catch (Exception $e) {
             $conn->rollback();
-            $message = "Error placing order. Please try again.";
+            $message = "Error placing order: " . $e->getMessage();
             $messageType = 'error';
         }
     }
@@ -498,11 +498,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['place_order'])) {
                     <div class="summary-row">
                         <span>Subtotal:</span>
                         <span>₱<?php echo number_format($subtotal, 2); ?></span>
-                    </div>
-                    
-                    <div class="summary-row">
-                        <span>Tax (12%):</span>
-                        <span>₱<?php echo number_format($tax, 2); ?></span>
                     </div>
                     
                     <div class="summary-row">

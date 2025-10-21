@@ -97,7 +97,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
 
 // Fetch customer's order history
 $ordersQuery = $conn->query("
-    SELECT o.*, COUNT(oi.id) as item_count
+    SELECT 
+        o.id,
+        o.total_amount,
+        o.payment_method,
+        o.status,
+        o.order_date,
+        COUNT(oi.id) AS item_count
     FROM orders o
     LEFT JOIN order_items oi ON o.id = oi.order_id
     WHERE o.customer_id = $customer_id
@@ -481,10 +487,12 @@ if ($ordersQuery) {
         .order-detail {
             display: flex;
             justify-content: space-between;
+            gap: 6px;
         }
 
         .order-detail strong {
             color: #2d2d2d;
+            min-width: 50px;
         }
 
         .empty-orders {
@@ -551,7 +559,12 @@ if ($ordersQuery) {
         <div class="header">
             <div class="header-info">
                 <h1>Welcome, <?php echo htmlspecialchars($customer['first_name']); ?>! 👋</h1>
-                <p>Member since <?php echo date('F Y', strtotime($customer['created_at'])); ?></p>
+                <p>Member since <?php 
+                                echo isset($customer['created_at']) 
+                                    ? date('F Y', strtotime($customer['created_at'])) 
+                                    : 'Unknown';
+                                ?>
+                                </p>
             </div>
                 <div class="user-avatar">
                     <form id="avatarForm" action="upload_avatar.php" method="POST" enctype="multipart/form-data">
@@ -652,7 +665,12 @@ if ($ordersQuery) {
                         </div>
                         <div class="info-item">
                             <div class="info-label">Member Since</div>
-                            <div class="info-value"><?php echo date('M d, Y', strtotime($customer['created_at'])); ?></div>
+                            <div class="info-value"><?php 
+                                                    echo isset($customer['created_at']) 
+                                                        ? date('M d, Y', strtotime($customer['created_at'])) 
+                                                        : 'N/A';
+                                                    ?>
+                                                    </div>
                         </div>
                     </div>
                 </div>
@@ -679,7 +697,7 @@ if ($ordersQuery) {
                             <div class="order-details">
                                 <div class="order-detail">
                                     <strong>Date:</strong>
-                                    <span><?php echo date('M d, Y', strtotime($order['created_at'])); ?></span>
+                                    <span><?= date('F d, Y h:i A', strtotime($order['order_date'])); ?></span>
                                 </div>
                                 <div class="order-detail">
                                     <strong>Items:</strong>
@@ -687,7 +705,7 @@ if ($ordersQuery) {
                                 </div>
                                 <div class="order-detail">
                                     <strong>Total:</strong>
-                                    <span>₱<?php echo number_format($order['total'], 2); ?></span>
+                                    <span>₱<?php echo number_format($order['total_amount'], 2); ?></span>
                                 </div>
                             </div>
                         </div>

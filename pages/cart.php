@@ -563,7 +563,9 @@ $finalTotal = $total + $deliveryFee;
                     <span class="amount">₱<?php echo number_format($finalTotal, 2); ?></span>
                 </div>
 
-                <button class="checkout-btn">Proceed to Checkout</button>
+                <form action="checkout.php" method="post">
+                    <button type="submit" class="checkout-btn">Proceed to Checkout</button>
+                </form>
                 <a href="menu.php" class="continue-shopping-btn">Continue Shopping</a>
             </div>
         </div>

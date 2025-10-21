@@ -398,7 +398,7 @@ if (isset($_GET['add']) && $customer_id) {
                         🛒 Cart (<?php echo $cartCount; ?>)
                     </a>
                 </li>
-                <li><a href="/login/logout.php" class="auth-btn login-btn">Logout</a></li>
+                <li><a href="../login/logout.php" class="auth-btn login-btn">Logout</a></li>
                 <li>
                 <a href="./profile.php" class="profile-link">
                     <img src="<?php echo $_SESSION['profile_picture'] ?? '../assets/pictures/default-profile.png'; ?>" 
