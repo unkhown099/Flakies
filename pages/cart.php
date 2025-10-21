@@ -1,48 +1,28 @@
-<?php
+<?php 
 require_once '../config/db_connect.php';
-
-// Get or create customer session
 session_start();
-// Get customer ID if logged in
+
 $customer_id = $_SESSION['customer_id'] ?? null;
-
-$customer_id = $_SESSION['customer_id'];
 $message = '';
-$messageType = ''; // 'success' or 'error'
+$messageType = '';
 
-// Handle add to cart
+// Handle cart actions
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
-    $product_id = intval($_POST['product_id']);
+    $cart_id = intval($_POST['product_id']);
     $quantity = intval($_POST['quantity'] ?? 1);
 
-    if ($_POST['action'] === 'add') {
-        // Check if product already in cart
-        $checkQuery = $conn->query("SELECT id, quantity FROM cart WHERE customer_id = $customer_id AND product_id = $product_id");
-        
-        if ($checkQuery->num_rows > 0) {
-            // Update quantity
-            $row = $checkQuery->fetch_assoc();
-            $newQuantity = $row['quantity'] + $quantity;
-            $conn->query("UPDATE cart SET quantity = $newQuantity WHERE customer_id = $customer_id AND product_id = $product_id");
-            $message = "Product quantity updated!";
+    if ($_POST['action'] === 'update') {
+        if ($quantity > 0) {
+            $conn->query("UPDATE cart SET quantity = $quantity WHERE customer_id = $customer_id AND id = $cart_id");
+            $message = "Cart updated!";
         } else {
-            // Add new item
-            $conn->query("INSERT INTO cart (customer_id, product_id, quantity) VALUES ($customer_id, $product_id, $quantity)");
-            $message = "Product added to cart!";
+            $conn->query("DELETE FROM cart WHERE customer_id = $customer_id AND id = $cart_id");
+            $message = "Product removed!";
         }
         $messageType = 'success';
     } elseif ($_POST['action'] === 'remove') {
-        $conn->query("DELETE FROM cart WHERE customer_id = $customer_id AND id = $product_id");
+        $conn->query("DELETE FROM cart WHERE customer_id = $customer_id AND id = $cart_id");
         $message = "Product removed from cart!";
-        $messageType = 'success';
-    } elseif ($_POST['action'] === 'update') {
-        if ($quantity > 0) {
-            $conn->query("UPDATE cart SET quantity = $quantity WHERE customer_id = $customer_id AND id = $product_id");
-            $message = "Cart updated!";
-        } else {
-            $conn->query("DELETE FROM cart WHERE customer_id = $customer_id AND id = $product_id");
-            $message = "Product removed!";
-        }
         $messageType = 'success';
     }
 }
@@ -58,7 +38,6 @@ $cartQuery = $conn->query("
 
 $cartItems = [];
 $subtotal = 0;
-
 if ($cartQuery) {
     while ($row = $cartQuery->fetch_assoc()) {
         $cartItems[] = $row;
@@ -66,9 +45,8 @@ if ($cartQuery) {
     }
 }
 
-$tax = $subtotal * 0.12; // 12% tax
-$total = $subtotal + $tax;
-$deliveryFee = 50; // Fixed delivery fee
+$total = $subtotal;
+$deliveryFee = 10;
 $finalTotal = $total + $deliveryFee;
 ?>
 <!DOCTYPE html>
@@ -252,12 +230,22 @@ $finalTotal = $total + $deliveryFee;
         }
 
         .item-emoji {
-            font-size: 3rem;
-            text-align: center;
-            background: linear-gradient(135deg, #f4e04d 0%, #d4a942 100%);
+            width: 80px;
+            height: 80px;
             border-radius: 15px;
-            padding: 1rem;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #f4e04d; /* fallback background */
         }
+
+        .item-emoji img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover; /* keeps aspect ratio, crops if necessary */
+        }
+
 
         .item-details h3 {
             font-size: 1.1rem;
@@ -520,70 +508,65 @@ $finalTotal = $total + $deliveryFee;
                 </div>
             </div>
         <?php else: ?>
-            <div class="content-wrapper">
-                <div class="cart-items-section">
-                    <?php foreach ($cartItems as $item): ?>
-                        <div class="cart-item">
-                            <div class="item-emoji">
-                                <?php echo $item['image']; ?>
-                            </div>
-                            <div class="item-details">
-                                <h3><?php echo htmlspecialchars($item['name']); ?></h3>
-                                <p><?php echo htmlspecialchars(substr($item['description'], 0, 50)); ?>...</p>
-                                <div class="item-price">₱<?php echo number_format($item['price'], 2); ?> each</div>
-                                <div class="item-controls">
-                                    <form method="POST" style="display: flex; gap: 0.5rem; align-items: center;">
-                                        <input type="hidden" name="action" value="update">
-                                        <input type="hidden" name="product_id" value="<?php echo $item['cart_id']; ?>">
-                                        <button type="button" class="qty-btn" onclick="decreaseQty(this)">−</button>
-                                        <input type="number" name="quantity" class="qty-input" value="<?php echo $item['quantity']; ?>" min="1" max="50">
-                                        <button type="button" class="qty-btn" onclick="increaseQty(this)">+</button>
-                                        <button type="submit" class="qty-btn" style="background: #d4a942; color: white;">Update</button>
-                                    </form>
-                                </div>
-                            </div>
-                            <div class="item-right">
-                                <div class="item-total">
-                                    ₱<?php echo number_format($item['price'] * $item['quantity'], 2); ?>
-                                </div>
-                                <form method="POST" style="width: 100%;">
-                                    <input type="hidden" name="action" value="remove">
+                  <div class="content-wrapper">
+            <div class="cart-items-section">
+                <?php foreach ($cartItems as $item): ?>
+                    <div class="cart-item">
+                        <div class="item-emoji">
+                            <img src="../cashier/images_path/<?php echo htmlspecialchars($item['image']); ?>" alt="<?php echo htmlspecialchars($item['name']); ?>">
+                        </div>
+                        <div class="item-details">
+                            <h3><?php echo htmlspecialchars($item['name']); ?></h3>
+                            <p><?php echo htmlspecialchars(substr($item['description'], 0, 50)); ?>...</p>
+                            <div class="item-price">₱<?php echo number_format($item['price'], 2); ?> each</div>
+                            <div class="item-controls">
+                                <form method="POST" style="display:flex;gap:0.5rem;align-items:center;">
+                                    <input type="hidden" name="action" value="update">
                                     <input type="hidden" name="product_id" value="<?php echo $item['cart_id']; ?>">
-                                    <button type="submit" class="remove-btn">Remove</button>
+                                    <button type="button" class="qty-btn" onclick="decreaseQty(this)">−</button>
+                                    <input type="number" name="quantity" class="qty-input" value="<?php echo $item['quantity']; ?>" min="1" max="50">
+                                    <button type="button" class="qty-btn" onclick="increaseQty(this)">+</button>
+                                    <button type="submit" class="qty-btn" style="background:#d4a942;color:white;">Update</button>
                                 </form>
                             </div>
                         </div>
-                    <?php endforeach; ?>
-                </div>
-
-                <!-- Order Summary -->
-                <div class="order-summary">
-                    <div class="summary-title">📋 Order Summary</div>
-                    
-                    <div class="summary-row">
-                        <span>Subtotal:</span>
-                        <span>₱<?php echo number_format($subtotal, 2); ?></span>
+                        <div class="item-right">
+                            <div class="item-total">
+                                ₱<?php echo number_format($item['price'] * $item['quantity'], 2); ?>
+                            </div>
+                            <form method="POST" style="width:100%;">
+                                <input type="hidden" name="action" value="remove">
+                                <input type="hidden" name="product_id" value="<?php echo $item['cart_id']; ?>">
+                                <button type="submit" class="remove-btn">Remove</button>
+                            </form>
+                        </div>
                     </div>
-                    
-                    <div class="summary-row">
-                        <span>Tax (12%):</span>
-                        <span>₱<?php echo number_format($tax, 2); ?></span>
-                    </div>
-                    
-                    <div class="summary-row">
-                        <span>Delivery Fee:</span>
-                        <span>₱<?php echo number_format($deliveryFee, 2); ?></span>
-                    </div>
-                    
-                    <div class="summary-row total">
-                        <span>Total:</span>
-                        <span class="amount">₱<?php echo number_format($finalTotal, 2); ?></span>
-                    </div>
-
-                    <button class="checkout-btn">Proceed to Checkout</button>
-                    <a href="menu.php" class="continue-shopping-btn">Continue Shopping</a>
-                </div>
+                <?php endforeach; ?>
             </div>
+
+            <!-- Order Summary -->
+            <div class="order-summary">
+                <div class="summary-title">📋 Order Summary</div>
+                
+                <div class="summary-row">
+                    <span>Subtotal:</span>
+                    <span>₱<?php echo number_format($subtotal, 2); ?></span>
+                </div>
+                
+                <div class="summary-row">
+                    <span>Delivery Fee:</span>
+                    <span>₱<?php echo number_format($deliveryFee, 2); ?></span>
+                </div>
+                
+                <div class="summary-row total">
+                    <span>Total:</span>
+                    <span class="amount">₱<?php echo number_format($finalTotal, 2); ?></span>
+                </div>
+
+                <button class="checkout-btn">Proceed to Checkout</button>
+                <a href="menu.php" class="continue-shopping-btn">Continue Shopping</a>
+            </div>
+        </div>
         <?php endif; ?>
     </div>
 

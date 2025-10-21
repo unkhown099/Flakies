@@ -35,6 +35,37 @@ if ($customer_id) {
     }
 }
 
+if (isset($_GET['add']) && $customer_id) {
+    $product_id = (int) $_GET['add'];
+
+    // Check if product already in cart
+    $stmt = $conn->prepare("SELECT * FROM cart WHERE customer_id = ? AND product_id = ?");
+    $stmt->bind_param("ii", $customer_id, $product_id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+
+    if ($result->num_rows > 0) {
+        // Update quantity
+        $update = $conn->prepare("UPDATE cart SET quantity = quantity + 1 WHERE customer_id = ? AND product_id = ?");
+        $update->bind_param("ii", $customer_id, $product_id);
+        $update->execute();
+        $update->close();
+    } else {
+        // Insert new row
+        $insert = $conn->prepare("INSERT INTO cart (customer_id, product_id, quantity) VALUES (?, ?, 1)");
+        $insert->bind_param("ii", $customer_id, $product_id);
+        $insert->execute();
+        $insert->close();
+    }
+
+    $stmt->close();
+
+    // Redirect back to menu
+    header("Location: menu.php");
+    exit;
+}
+
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -401,7 +432,7 @@ if ($customer_id) {
                         <?php foreach ($categoryProducts as $product): ?>
                             <div class="product-card">
                                 <div class="product-image">
-                                    <?php echo $product['emoji']; ?>
+                                    <img src="../cashier/images_path/<?php echo htmlspecialchars($product['image']); ?>" alt="<?php echo htmlspecialchars($product['name']); ?>" />
                                 </div>
                                 <div class="product-info">
                                     <div class="product-name">
@@ -414,7 +445,13 @@ if ($customer_id) {
                                         <span class="product-price">
                                             ₱<?php echo number_format($product['price'], 2); ?>
                                         </span>
-                                        <button class="add-to-cart-btn" onclick="addToCart(<?php echo $product['id']; ?>, '<?php echo htmlspecialchars($product['name']); ?>')">
+                                        <button class="add-to-cart-btn"
+                                            <?php if (isset($_SESSION['customer_id'])): ?>
+                                                onclick="window.location.href='menu.php?add=<?php echo $product['id']; ?>'">
+                                            <?php else: ?>
+                                                onclick="window.location.href='../login/login.php'"
+                                            <?php endif; ?>
+                                        >
                                             Add
                                         </button>
                                     </div>

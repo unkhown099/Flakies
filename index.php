@@ -455,8 +455,8 @@ if ($customer_id) {
 
         .order-btn {
             width: 100%;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
+            background: #f4e04d;
+            color: #2d2d2d;
             padding: 0.9rem;
             border: none;
             border-radius: 15px;
@@ -521,6 +521,50 @@ if ($customer_id) {
 
         footer p {
             opacity: 0.9;
+        }
+
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 2rem;
+        }
+
+        .product-card {
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        .product-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.25);
+            border-color: #2d2d2d;
+        }
+
+        .product-image {
+            width: 100%;
+            height: 200px;
+            background: linear-gradient(135deg, #f4e04d 0%, #d4a942 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 5rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .product-image::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.1) 50%, transparent 70%);
+            animation: shine 3s infinite;
         }
 
         @media (max-width: 768px) {
@@ -603,29 +647,30 @@ if ($customer_id) {
                 <?php
                 if ($result->num_rows > 0) {
                     while ($row = $result->fetch_assoc()) {
-                        echo "
-                <div class='product-card'>
-                    <div class='product-image'>";
+                        echo "<div class='product-card'>
+                                <div class='product-image'>";
                         if (!empty($row['image'])) {
-                            echo "<img src='uploads/{$row['image']}' alt='{$row['name']}' style='width:100%;height:250px;object-fit:cover;border-radius:10px;'>";
+                            echo "<img src='cashier/images_path/" . $row['image'] . "' 
+                                    alt='" . htmlspecialchars($row['name'], ENT_QUOTES) . "' 
+                                    style='width:100%;height:250px;object-fit:cover;border-radius:10px;'>";
                         } else {
                             echo "🍴"; // fallback emoji
                         }
                         echo "</div>
-                    <div class='product-info'>
-                        <h3>{$row['name']}</h3>
-                        <p>{$row['description']}</p>
-                        <div class='product-price'>₱{$row['price']}</div>
-                        <p style='color:gray;font-size:0.9rem;'>Stock: {$row['stock']}</p>
-                        <button class='order-btn'>Add to Cart</button>
-                    </div>
-                </div>";
+                            <div class='product-info'>
+                                <h3>" . htmlspecialchars($row['name']) . "</h3>
+                                <p>" . htmlspecialchars($row['description']) . "</p>
+                                <div class='product-price'>₱" . $row['price'] . "</div>
+                                <p style='color:gray;font-size:0.9rem;'>Stock: " . $row['stock'] . "</p>
+                                <a href='pages/menu.php'><button class='order-btn'>View on menu</button></a>
+                            </div>
+                            </div>";
                     }
                 } else {
                     echo "<p style='text-align:center;'>No products available yet.</p>";
                 }
                 ?>
-            </div>
+                </div>
         </section>
 
         <section class="features" id="features">
