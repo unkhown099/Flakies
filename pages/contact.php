@@ -424,6 +424,19 @@ if ($customer_id) {
         font-size: 0.9rem;
     }
 
+    /* Section appear animation */
+    .section {
+        opacity: 0;
+        transform: translateY(30px);
+        transition: all 0.8s ease;
+        transition-delay: var(--delay, 0s);
+    }
+
+    .section.show {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
         @media (max-width: 768px) {
             .content-wrapper {
                 grid-template-columns: 1fr;
@@ -477,14 +490,14 @@ if ($customer_id) {
     </nav>
 
     <div class="container">
-        <div class="hero-section">
+        <div class="hero-section section" style="--delay: 0s;">
             <h1>Get in Touch 💬</h1>
             <p>Have questions? We'd love to hear from you. Contact us anytime!</p>
         </div>
 
         <div class="content-wrapper">
             <!-- Contact Information -->
-            <div class="contact-info-section">
+            <div class="contact-info-section section" style="--delay: 0.2s;">
                 <h2>📍 Contact Information</h2>
 
                 <div class="contact-item">
@@ -529,7 +542,7 @@ if ($customer_id) {
             </div>
 
             <!-- Contact Form -->
-            <div class="form-section">
+            <div class="form-section section" style="--delay: 0.4s;">
                 <h2>Send us a Message</h2>
 
                 <?php if ($successMessage): ?>
@@ -577,7 +590,7 @@ if ($customer_id) {
         </div>
 
         <!-- Map Section -->
-        <div class="map-section">
+        <div class="map-section section" style="--delay: 0.6s;">
             <h2>Find Us Here</h2>
             <!-- Map Section -->
             <div class="map-section">
@@ -642,5 +655,22 @@ document.getElementById('contactForm').addEventListener('submit', function(e) {
     }
 });
 </script>
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const sections = document.querySelectorAll(".section");
+            const revealSection = () => {
+                sections.forEach(section => {
+                    const position = section.getBoundingClientRect().top;
+                    const screenHeight = window.innerHeight;
+                    if (position < screenHeight - 100) {
+                        section.classList.add("show");
+                    }
+                });
+            };
+            
+            revealSection(); // Run on load
+            window.addEventListener("scroll", revealSection); // Also animate on scroll
+        });
+    </script>  
 </body>
 </html>

@@ -361,6 +361,18 @@ if ($customer_id) {
         .cta-btn-secondary:hover {
             background: #1a1a1a;
         }
+        /* Section appear animation */
+        .section {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.8s ease;
+            transition-delay: var(--delay, 0s);
+        }
+
+        .section.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
 
         @media (max-width: 768px) {
             .hero-section h1 {
@@ -419,12 +431,12 @@ if ($customer_id) {
     </nav>
 
     <div class="container">
-        <div class="hero-section">
+        <div class="hero-section section" style="--delay: 0s;">
             <h1>About Flakies 🍚</h1>
             <p>Bringing the authentic taste of the Philippines straight to your doorstep since day one.</p>
         </div>
 
-        <div class="content-section">
+        <div class="content-section section" style="--delay: 0.2s;">
             <h2>📖 Our Story</h2>
             <p>
                 Flakies was born from a passion for authentic Filipino cuisine and a dream to share the flavors of home with everyone. We believe that food is more than just sustenance—it's a connection to culture, family, and tradition.
@@ -437,7 +449,7 @@ if ($customer_id) {
             </p>
         </div>
 
-        <div class="content-section">
+        <div class="content-section section" style="--delay: 0.4s;">
             <h2>🎯 Our Mission</h2>
             <p>
                 To celebrate and share authentic Filipino flavors with communities everywhere. We're committed to:
@@ -451,7 +463,7 @@ if ($customer_id) {
             </ul>
         </div>
 
-        <div class="content-section">
+        <div class="content-section section" style="--delay: 0.6s;">
             <h2>💎 Our Values</h2>
             <div class="values-grid">
                 <div class="value-card">
@@ -477,7 +489,7 @@ if ($customer_id) {
             </div>
         </div>
 
-        <div class="content-section">
+        <div class="content-section section" style="--delay: 0.8s;">
             <h2>👥 Meet Our Team</h2>
             <p>Behind every delicious Flakies product is a dedicated team passionate about Filipino cuisine.</p>
             <div class="team-grid">
@@ -512,7 +524,7 @@ if ($customer_id) {
             </div>
         </div>
 
-        <div class="cta-section">
+        <div class="cta-section section" style="--delay: 1s;">
             <h2>Ready to Taste Authenticity? 🇵🇭</h2>
             <p>Experience the best of Filipino cuisine delivered fresh to your door.</p>
             <div class="cta-buttons">
@@ -521,5 +533,22 @@ if ($customer_id) {
             </div>
         </div>
     </div>
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const sections = document.querySelectorAll(".section");
+            const revealSection = () => {
+                sections.forEach(section => {
+                    const position = section.getBoundingClientRect().top;
+                    const screenHeight = window.innerHeight;
+                    if (position < screenHeight - 100) {
+                        section.classList.add("show");
+                    }
+                });
+            };
+            
+            revealSection(); // Run on load
+            window.addEventListener("scroll", revealSection); // Also animate on scroll
+        });
+    </script>  
 </body>
 </html>
