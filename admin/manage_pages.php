@@ -471,7 +471,6 @@ $conn->close();
           <label>Preview:</label>
           <div id="livePreview" style="padding:10px; border:1px solid #ccc; border-radius:6px; min-height:100px;">
           </div>
-
         </div>
         <div class="modal-footer">
           <button type="button" class="btn-cancel" onclick="closeEditModal()">Cancel</button>
@@ -483,26 +482,37 @@ $conn->close();
 
   <script src="../assets/tinymce/js/tinymce/tinymce.min.js"></script>
   <script>
+    const sections = <?= json_encode($page_contents); ?>;
+    const modal = document.getElementById('editModal');
+    const modalTitle = document.getElementById('modalTitle');
+    const modalSection = document.getElementById('modalSection');
+    const livePreview = document.getElementById('livePreview');
+
+    // Initialize TinyMCE
     tinymce.init({
       selector: '#modalContent',
       height: 300,
       menubar: false,
       plugins: 'lists link image table code',
       toolbar: 'undo redo | bold italic underline | alignleft aligncenter alignright | bullist numlist | code',
-      branding: false
+      branding: false,
+      license_key: 'gpl',
+      setup: function(editor) {
+        // Update live preview on content change
+        editor.on('keyup change', function() {
+          livePreview.innerHTML = editor.getContent();
+        });
+      }
     });
-  </script>
-  <script>
-    const sections = <?= json_encode($page_contents); ?>;
-    const modal = document.getElementById('editModal');
-    const modalTitle = document.getElementById('modalTitle');
-    const modalSection = document.getElementById('modalSection');
-    const modalContent = document.getElementById('modalContent');
 
     function openEditModal(section, title) {
       modalTitle.textContent = 'Edit ' + title;
       modalSection.value = section;
-      modalContent.value = sections[section] || '';
+
+      // Wait until TinyMCE is ready
+      tinymce.get('modalContent').setContent(sections[section] || '');
+      livePreview.innerHTML = sections[section] || '';
+
       modal.classList.add('active');
       document.body.style.overflow = 'hidden';
     }
@@ -524,10 +534,6 @@ $conn->close();
       if (e.key === 'Escape' && modal.classList.contains('active')) {
         closeEditModal();
       }
-    });
-    // Live preview functionality
-    modalContent.addEventListener('input', () => {
-      document.getElementById('livePreview').innerHTML = modalContent.value;
     });
   </script>
 </body>
