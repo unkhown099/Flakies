@@ -13,9 +13,19 @@ if ($customer_id) {
         $cartCount = $row['total_qty'] ?? 0;
     }
 }
+
+$sql = "SELECT section_name, content FROM pages WHERE page_name='about'";
+$result = $conn->query($sql);
+$sections = [];
+if ($result) {
+    while ($row = $result->fetch_assoc()) {
+        $sections[$row['section_name']] = $row['content'];
+    }
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -40,7 +50,7 @@ if ($customer_id) {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            box-shadow: 0 2px 20px rgba(0,0,0,0.3);
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.3);
             position: sticky;
             top: 0;
             z-index: 100;
@@ -72,15 +82,15 @@ if ($customer_id) {
         .nav-links a:hover {
             opacity: 0.8;
         }
-        
+
         .auth-btn {
-        display: inline-block;
-        padding: 0.5rem 1.2rem;
-        border-radius: 50px;
-        font-weight: 600;
-        text-decoration: none;
-        transition: all 0.3s ease;
-        border: 2px solid #f4e04d;
+            display: inline-block;
+            padding: 0.5rem 1.2rem;
+            border-radius: 50px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            border: 2px solid #f4e04d;
         }
 
         .login-btn {
@@ -122,12 +132,12 @@ if ($customer_id) {
         }
 
         .profile-link {
-        display: inline-block;
-        width: 35px;
-        height: 35px;
-        border-radius: 50%;
-        overflow: hidden;
-        margin-left: 10px;
+            display: inline-block;
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            overflow: hidden;
+            margin-left: 10px;
         }
 
         .profile-link .profile-pic {
@@ -148,7 +158,7 @@ if ($customer_id) {
             border-radius: 20px;
             padding: 3rem;
             margin-bottom: 3rem;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
             text-align: center;
             color: #2d2d2d;
         }
@@ -173,7 +183,7 @@ if ($customer_id) {
             border-radius: 20px;
             padding: 2.5rem;
             margin-bottom: 2rem;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
             color: #2d2d2d;
         }
 
@@ -230,7 +240,7 @@ if ($customer_id) {
             padding: 2rem;
             border-radius: 15px;
             text-align: center;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
             transition: transform 0.3s;
         }
 
@@ -266,7 +276,7 @@ if ($customer_id) {
             background: linear-gradient(135deg, #f4e04d 0%, #d4a942 100%);
             border-radius: 15px;
             overflow: hidden;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
             transition: transform 0.3s;
         }
 
@@ -308,7 +318,7 @@ if ($customer_id) {
             border-radius: 20px;
             padding: 2.5rem;
             text-align: center;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
             color: #2d2d2d;
         }
 
@@ -361,6 +371,7 @@ if ($customer_id) {
         .cta-btn-secondary:hover {
             background: #1a1a1a;
         }
+
         /* Section appear animation */
         .section {
             opacity: 0;
@@ -398,10 +409,11 @@ if ($customer_id) {
         }
     </style>
 </head>
+
 <body>
     <nav>
         <div class="logo">
-          <img src="../assets/pictures/45b0e7c9-8bc1-4ef3-bac2-cfc07174d613.png" alt="Flakies Logo" style="height:40px; margin-right:10px;">
+            <img src="../assets/pictures/45b0e7c9-8bc1-4ef3-bac2-cfc07174d613.png" alt="Flakies Logo" style="height:40px; margin-right:10px;">
             Flakies
         </div>
         </div>
@@ -418,11 +430,11 @@ if ($customer_id) {
                 </li>
                 <li><a href="/login/logout.php" class="auth-btn login-btn">Logout</a></li>
                 <li>
-                <a href="./profile.php" class="profile-link">
-                    <img src="<?php echo $_SESSION['profile_picture'] ?? '../assets/pictures/default-profile.png'; ?>" 
-                         alt="Profile" class="profile-pic">
-                </a>
-            </li>
+                    <a href="./profile.php" class="profile-link">
+                        <img src="<?php echo $_SESSION['profile_picture'] ?? '../assets/pictures/default-profile.png'; ?>"
+                            alt="Profile" class="profile-pic">
+                    </a>
+                </li>
             <?php else: ?>
                 <li><a href="../login/login.php" class="auth-btn login-btn">Login</a></li>
                 <li><a href="../login/register.php" class="auth-btn register-btn">Register</a></li>
@@ -432,105 +444,23 @@ if ($customer_id) {
 
     <div class="container">
         <div class="hero-section section" style="--delay: 0s;">
-            <h1>About Flakies 🍚</h1>
-            <p>Bringing the authentic taste of the Philippines straight to your doorstep since day one.</p>
+            <?php echo $sections['hero'] ?? ''; ?>
         </div>
 
         <div class="content-section section" style="--delay: 0.2s;">
-            <h2>📖 Our Story</h2>
-            <p>
-                Flakies was born from a passion for authentic Filipino cuisine and a dream to share the flavors of home with everyone. We believe that food is more than just sustenance—it's a connection to culture, family, and tradition.
-            </p>
-            <p>
-                Starting as a small venture with handcrafted pastils and refreshing halo-halo, we've grown into a trusted name in Filipino delicacies. Every product we create carries the love, dedication, and authenticity that our family has instilled in us for generations.
-            </p>
-            <p>
-                Today, Flakies stands as a celebration of Filipino culinary heritage, delivering quality, tradition, and taste with every order.
-            </p>
+            <?php echo $sections['our_story'] ?? ''; ?>
         </div>
 
         <div class="content-section section" style="--delay: 0.4s;">
-            <h2>🎯 Our Mission</h2>
-            <p>
-                To celebrate and share authentic Filipino flavors with communities everywhere. We're committed to:
-            </p>
-            <ul>
-                <li>Providing premium quality ingredients in every product</li>
-                <li>Preserving traditional Filipino recipes and cooking methods</li>
-                <li>Ensuring fresh, timely delivery to our valued customers</li>
-                <li>Supporting local farmers and suppliers</li>
-                <li>Creating memorable experiences through authentic Filipino food</li>
-            </ul>
+            <?php echo $sections['our_mission'] ?? ''; ?>
         </div>
 
         <div class="content-section section" style="--delay: 0.6s;">
-            <h2>💎 Our Values</h2>
-            <div class="values-grid">
-                <div class="value-card">
-                    <div class="value-icon">🌟</div>
-                    <h3>Authenticity</h3>
-                    <p>We honor traditional recipes and never compromise on the authentic Filipino taste.</p>
-                </div>
-                <div class="value-card">
-                    <div class="value-icon">❤️</div>
-                    <h3>Quality</h3>
-                    <p>Premium ingredients and meticulous preparation ensure every bite is perfect.</p>
-                </div>
-                <div class="value-card">
-                    <div class="value-icon">⚡</div>
-                    <h3>Speed</h3>
-                    <p>Fresh, quick delivery because great food should arrive at its best.</p>
-                </div>
-                <div class="value-card">
-                    <div class="value-icon">🤝</div>
-                    <h3>Community</h3>
-                    <p>We're proud to serve our community and support local businesses.</p>
-                </div>
-            </div>
+            <?php echo $sections['our_values'] ?? ''; ?>
         </div>
 
         <div class="content-section section" style="--delay: 0.8s;">
-            <h2>👥 Meet Our Team</h2>
-            <p>Behind every delicious Flakies product is a dedicated team passionate about Filipino cuisine.</p>
-            <div class="team-grid">
-                <div class="team-member">
-                    <div class="member-avatar">👨‍🍳</div>
-                    <div class="member-info">
-                        <div class="member-name">Juan Santos</div>
-                        <div class="member-role">Head Chef</div>
-                    </div>
-                </div>
-                <div class="team-member">
-                    <div class="member-avatar">👩‍💼</div>
-                    <div class="member-info">
-                        <div class="member-name">Maria Lopez</div>
-                        <div class="member-role">Operations Manager</div>
-                    </div>
-                </div>
-                <div class="team-member">
-                    <div class="member-avatar">👨‍💻</div>
-                    <div class="member-info">
-                        <div class="member-name">Carlos Reyes</div>
-                        <div class="member-role">Delivery Manager</div>
-                    </div>
-                </div>
-                <div class="team-member">
-                    <div class="member-avatar">👩‍🍳</div>
-                    <div class="member-info">
-                        <div class="member-name">Ana Garcia</div>
-                        <div class="member-role">Product Specialist</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="cta-section section" style="--delay: 1s;">
-            <h2>Ready to Taste Authenticity? 🇵🇭</h2>
-            <p>Experience the best of Filipino cuisine delivered fresh to your door.</p>
-            <div class="cta-buttons">
-                <a href="menu.php" class="cta-btn cta-btn-primary">Browse Menu</a>
-                <a href="#" class="cta-btn cta-btn-secondary">Contact Us</a>
-            </div>
+            <?php echo $sections['meet_team'] ?? ''; ?>
         </div>
     </div>
     <script>
@@ -545,10 +475,11 @@ if ($customer_id) {
                     }
                 });
             };
-            
+
             revealSection(); // Run on load
             window.addEventListener("scroll", revealSection); // Also animate on scroll
         });
-    </script>  
+    </script>
 </body>
+
 </html>

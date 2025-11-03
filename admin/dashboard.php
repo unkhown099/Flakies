@@ -389,6 +389,7 @@ $formatted_periods = array_map(function ($p) use ($group_by) {
             <li><a href="manage_users.php">👥 Manage Users</a></li>
             <li><a href="manage_products.php">📦 Manage Products</a></li>
             <li><a href="manage_report.php">📊 Reports</a></li>
+            <li><a href="manage_pages.php">📝 Manage Pages</a></li>
 
         <?php elseif (isset($role) && $role === 'manager'): ?>
             <li><a href="reports.php">📊 Reports</a></li>

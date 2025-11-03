@@ -3,3 +3,4 @@ config/db_connect.php
 *.log
 /.vs/
 /.vscode/
+/assets/tinymce/

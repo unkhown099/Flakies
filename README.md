@@ -20,3 +20,8 @@ In forgot_password.php, at the very top, add:
 require '../vendor/autoload.php';
 
 PS: GIT IGNORE THE VENDOR ALWAYS
+
+UPDATE!!!
+
+DOWNLOAD TINYMCE
+LINK:https://www.tiny.cloud/get-tiny/self-hosted/

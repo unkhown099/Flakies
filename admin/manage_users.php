@@ -420,6 +420,7 @@ $staff = $result->fetch_all(MYSQLI_ASSOC);
       <a class="active" href="manage_users.php">👥 Manage Users</a>
       <a href="manage_products.php">📦 Manage Products</a>
       <a href="manage_report.php">📊 Reports</a>
+      <li><a href="manage_pages.php">📝 Manage Pages</a></li>
     </nav>
     <a class="btn-logout" href="../login/logout.php">🚪 Logout</a>
   </aside>
