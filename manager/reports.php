@@ -568,7 +568,7 @@ $conn->close();
             </div>
             <div class="card">
                 <h3>Total Sales</h3>
-                <p>$<?= number_format($summary['total_sales'] ?? 0, 2) ?></p>
+                <p>₱<?= number_format($summary['total_sales'] ?? 0, 2) ?></p>
                 <small>Filtered results</small>
             </div>
             <div class="card">

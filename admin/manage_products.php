@@ -466,9 +466,9 @@ $products = $result ? $result->fetch_all(MYSQLI_ASSOC) : [];
                                 <td>₱<?= number_format($product['price'], 2) ?></td>
                                 <td>
                                     <button type="button"
-                                        class="active-btn <?= $product['product_status'] == 1 ? 'active' : 'inactive' ?>"
-                                        onclick="toggleStatus(<?= $product['id'] ?>, <?= $product['product_status'] ?>)">
-                                        <?= $product['product_status'] == 1 ? 'Active' : 'Inactive' ?>
+                                        class="active-btn <?= $product['status'] == 1 ? 'active' : 'inactive' ?>"
+                                        onclick="toggleStatus(<?= $product['id'] ?>, <?= $product['status'] ?>)">
+                                        <?= $product['status'] == 1 ? 'Active' : 'Inactive' ?>
                                     </button>
                                 </td>
                                 <td>

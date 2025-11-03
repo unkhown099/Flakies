@@ -262,7 +262,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             <p class="error"><?= $error ?></p>
         <?php endif; ?>
 
-        <form action="login.php" method="POST" class="login-form">
+        <form action="login.php" method="POST" class="login-form" autocomplete="off">
             <div class="input-group">
                 <input type="text" name="username" placeholder="Username" class="required-field">
                 <span class="required-message">*Required</span>

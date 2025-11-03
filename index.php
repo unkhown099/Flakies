@@ -3,7 +3,21 @@ session_start();
 include("config/db_connect.php");
 
 // Fetch products dynamically
-$sql = "SELECT name, description, price, stock, image FROM products";
+$sql = "
+    SELECT 
+        p.id,
+        p.name,
+        p.description,
+        p.price,
+        p.stock,
+        p.image,
+        SUM(c.quantity) AS total_sold
+    FROM products p
+    LEFT JOIN cart c ON p.id = c.product_id   -- or use order_items if you track completed sales
+    GROUP BY p.id
+    ORDER BY total_sold DESC
+    LIMIT 3
+";
 $result = $conn->query($sql);
 
 // Get customer ID if logged in

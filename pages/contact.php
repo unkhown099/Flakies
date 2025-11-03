@@ -504,7 +504,7 @@ if ($customer_id) {
                     <div class="contact-icon">📍</div>
                     <div class="contact-content">
                         <h3>Address</h3>
-                        <p>Pasay City, Metro Manila<br>Philippines 🇵🇭</p>
+                        <p>2651 Magnolia St, Caloocan, Metro Manila<br>Philippines 🇵🇭</p>
                     </div>
                 </div>
 
@@ -520,7 +520,7 @@ if ($customer_id) {
                     <div class="contact-icon">✉️</div>
                     <div class="contact-content">
                         <h3>Email</h3>
-                        <p><a href="mailto:hello@flakies.com">hello@flakies.com</a></p>
+                        <p><a href="mailto:flakies050@gmail.com">flakies050@gmail.com</a></p>
                     </div>
                 </div>
 
@@ -553,7 +553,7 @@ if ($customer_id) {
                     <div class="error-message">✗ <?php echo htmlspecialchars($errorMessage); ?></div>
                 <?php endif; ?>
 
-                <form id="contactForm" method="POST">
+                <form id="contactForm" method="POST" autocomplete="off">
                     <div class="form-row">
                         <div class="form-group">
                             <label for="name">Name <span class="required">*</span></label>

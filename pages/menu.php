@@ -13,6 +13,10 @@ if ($result) {
     $conn->next_result();     // flush multi-query buffer
 }
 
+usort($products, function($a, $b) {
+    return strtotime($a['created_at']) <=> strtotime($b['created_at']);
+});
+
 // Group products by category
 $productsByCategory = [];
 foreach ($products as $product) {

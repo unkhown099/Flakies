@@ -194,7 +194,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <h1 class="logo-text">Flakies</h1>
         <p class="welcome">Create a new account</p>
 
-        <form id="registerForm" action="register.php" method="POST">
+        <form id="registerForm" action="register.php" autocomplete="off" method="POST">
             <div class="input-group">
                 <input type="text" name="first_name" placeholder="First Name">
                 <span class="error-msg"></span>
