@@ -1,4 +1,4 @@
-config/db_connect.php
+# config/db_connect.php
 /vendor/
 *.log
 /.vs/
