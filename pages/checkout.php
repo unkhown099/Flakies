@@ -1,10 +1,7 @@
 <?php
 // checkout.php - Flakies Checkout Page
 
-// Include database connection
 require_once '../config/db_connect.php';
-
-// Start session
 session_start();
 
 // Check if customer is logged in
@@ -44,7 +41,7 @@ if ($cartQuery) {
     }
 }
 
-// If cart is empty, redirect to cart page
+// Redirect if cart is empty
 if (empty($cartItems)) {
     header('Location: cart.php');
     exit;
@@ -53,7 +50,7 @@ if (empty($cartItems)) {
 $deliveryFee = 10; // Fixed delivery fee
 $total = $subtotal + $deliveryFee;
 
-/// Handle order placement
+// Handle order placement
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['place_order'])) {
     $delivery_address = $conn->real_escape_string(trim($_POST['delivery_address']));
     $phone = $conn->real_escape_string(trim($_POST['phone']));
@@ -67,36 +64,39 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['place_order'])) {
     } else {
         $conn->begin_transaction();
         try {
-            // Insert order (fixed)
-            $orderQuery = "INSERT INTO orders 
-                (customer_id, total_amount, status, delivery_address, phone, payment_method, notes) 
-                VALUES ($customer_id, $total, 'pending', '$delivery_address', '$phone', '$payment_method', '$notes')";
+            // 1️⃣ Place order using stored procedure
+            $stmt = $conn->prepare("CALL PlaceOrder(?, ?, ?, ?, ?, ?, @new_order_id)");
+            $stmt->bind_param("idssss", $customer_id, $total, $delivery_address, $phone, $payment_method, $notes);
+            $stmt->execute();
+            $stmt->close();
 
+            // Get the newly created order ID
+            $result = $conn->query("SELECT @new_order_id AS order_id");
+            $row = $result->fetch_assoc();
+            $order_id = $row['order_id'];
+            $result->free();
+            $conn->next_result();
 
+            // 2️⃣ Insert each order item using stored procedure
+            foreach ($cartItems as $item) {
+                $product_id = $item['product_id'];
+                $quantity = $item['quantity'];
+                $price = $item['price'];
 
-            if ($conn->query($orderQuery)) {
-                $order_id = $conn->insert_id;
-
-                // Insert order items from cart
-                foreach ($cartItems as $item) {
-                    $product_id = $item['product_id'];
-                    $quantity = $item['quantity'];
-                    $price = $item['price'];
-
-                    $itemQuery = "INSERT INTO order_items (order_id, product_id, quantity, price) 
-                                  VALUES ($order_id, $product_id, $quantity, $price)";
-                    $conn->query($itemQuery);
-                }
-
-                // Clear cart
-                $conn->query("DELETE FROM cart WHERE customer_id = $customer_id");
-
-                $conn->commit();
-                header("Location: order_success.php?order_id=$order_id");
-                exit;
-            } else {
-                throw new Exception($conn->error);
+                $stmt2 = $conn->prepare("CALL AddOrderItem(?, ?, ?, ?)");
+                $stmt2->bind_param("iiid", $order_id, $product_id, $quantity, $price);
+                $stmt2->execute();
+                $stmt2->close();
+                $conn->next_result();
             }
+
+            // 3️⃣ Clear the cart
+            $conn->query("DELETE FROM cart WHERE customer_id = $customer_id");
+
+            $conn->commit();
+            header("Location: order_success.php?order_id=$order_id");
+            exit;
+
         } catch (Exception $e) {
             $conn->rollback();
             $message = "Error placing order: " . $e->getMessage();

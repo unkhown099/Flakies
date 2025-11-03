@@ -28,13 +28,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
 }
 
 // Fetch cart items
-$cartQuery = $conn->query("
-    SELECT c.id as cart_id, c.quantity, p.id as product_id, p.name, p.image, p.price, p.description
-    FROM cart c
-    JOIN products p ON c.product_id = p.id
-    WHERE c.customer_id = $customer_id
-    ORDER BY c.added_at DESC
-");
+$cartQuery = $conn->query("CALL GetCartItems($customer_id)");
 
 $cartItems = [];
 $subtotal = 0;
@@ -43,6 +37,8 @@ if ($cartQuery) {
         $cartItems[] = $row;
         $subtotal += $row['price'] * $row['quantity'];
     }
+    $cartQuery->free();
+    $conn->next_result(); // Important after stored procedure
 }
 
 $total = $subtotal;

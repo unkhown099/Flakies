@@ -2,32 +2,28 @@
 session_start();
 include("config/db_connect.php");
 
-// Fetch products dynamically
-$sql = "
-    SELECT 
-        p.id,
-        p.name,
-        p.description,
-        p.price,
-        p.stock,
-        p.image,
-        SUM(c.quantity) AS total_sold
-    FROM products p
-    LEFT JOIN cart c ON p.id = c.product_id   -- or use order_items if you track completed sales
-    GROUP BY p.id
-    ORDER BY total_sold DESC
-    LIMIT 3
-";
-$result = $conn->query($sql);
+// Fetch top products
+$products = [];
+$result = $conn->query("CALL GetTop3BestSellingProducts()");
+if ($result) {
+    while ($row = $result->fetch_assoc()) {
+        $products[] = $row;
+    }
+    $result->free();
+    $conn->next_result();
+} else {
+    $products = []; // fallback empty array
+}
 
-// Get customer ID if logged in
+// Get customer ID
 $customer_id = $_SESSION['customer_id'] ?? null;
 
-// Fetch number of items in cart if logged in
+// Fetch cart count safely
 $cartCount = 0;
 if ($customer_id) {
     $cartQuery = $conn->query("SELECT SUM(quantity) as total_qty FROM cart WHERE customer_id = $customer_id");
-    if ($cartQuery && $row = $cartQuery->fetch_assoc()) {
+    if ($cartQuery) {
+        $row = $cartQuery->fetch_assoc();
         $cartCount = $row['total_qty'] ?? 0;
     }
 }
@@ -101,7 +97,7 @@ if ($customer_id) {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            box-shadow: 0 2px 20px rgba(0,0,0,0.3);
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.3);
             position: sticky;
             top: 0;
             z-index: 100;
@@ -148,13 +144,13 @@ if ($customer_id) {
         }
 
         .auth-btn {
-        display: inline-block;
-        padding: 0.5rem 1.2rem;
-        border-radius: 50px;
-        font-weight: 600;
-        text-decoration: none;
-        transition: all 0.3s ease;
-        border: 2px solid #f4e04d;
+            display: inline-block;
+            padding: 0.5rem 1.2rem;
+            border-radius: 50px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            border: 2px solid #f4e04d;
         }
 
         .login-btn {
@@ -196,12 +192,12 @@ if ($customer_id) {
         }
 
         .profile-link {
-        display: inline-block;
-        width: 35px;
-        height: 35px;
-        border-radius: 50%;
-        overflow: hidden;
-        margin-left: 10px;
+            display: inline-block;
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            overflow: hidden;
+            margin-left: 10px;
         }
 
         .profile-link .profile-pic {
@@ -547,14 +543,14 @@ if ($customer_id) {
             background: white;
             border-radius: 20px;
             overflow: hidden;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
             transition: all 0.3s ease;
             border: 2px solid transparent;
         }
 
         .product-card:hover {
             transform: translateY(-10px);
-            box-shadow: 0 20px 50px rgba(0,0,0,0.25);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.25);
             border-color: #2d2d2d;
         }
 
@@ -577,7 +573,7 @@ if ($customer_id) {
             left: 0;
             right: 0;
             bottom: 0;
-            background: linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.1) 50%, transparent 70%);
+            background: linear-gradient(45deg, transparent 30%, rgba(255, 255, 255, 0.1) 50%, transparent 70%);
             animation: shine 3s infinite;
         }
 
@@ -609,34 +605,34 @@ if ($customer_id) {
 
 <body>
     <nav>
-    <div class="logo">
-        <img src="assets/pictures/45b0e7c9-8bc1-4ef3-bac2-cfc07174d613.png" alt="Flakies Logo">
-        <span>Flakies</span>
-    </div>
-    <ul class="nav-links">
-        <li><a href="pages/menu.php">Menu</a></li>
-        <li><a href="pages/about.php">About</a></li>
-        <li><a href="pages/contact.php">Contact</a></li>
+        <div class="logo">
+            <img src="assets/pictures/45b0e7c9-8bc1-4ef3-bac2-cfc07174d613.png" alt="Flakies Logo">
+            <span>Flakies</span>
+        </div>
+        <ul class="nav-links">
+            <li><a href="pages/menu.php">Menu</a></li>
+            <li><a href="pages/about.php">About</a></li>
+            <li><a href="pages/contact.php">Contact</a></li>
 
-        <?php if (isset($_SESSION['customer_id'])): ?>
-            <li>
-                <a href="pages/cart.php" class="auth-btn cart-btn">
-                    🛒 Cart (<?php echo $cartCount; ?>)
-                </a>
-            </li>
-            <li><a href="login/logout.php" class="auth-btn login-btn">Logout</a></li>
-            <li>
-                <a href="pages/profile.php" class="profile-link">
-                    <img src="<?php echo $_SESSION['profile_picture'] ?? 'assets/pictures/default-profile.png'; ?>" 
-                         alt="Profile" class="profile-pic">
-                </a>
-            </li>
-        <?php else: ?>
-            <li><a href="login/login.php" class="auth-btn login-btn">Login</a></li>
-            <li><a href="login/register.php" class="auth-btn register-btn">Register</a></li>
-        <?php endif; ?>
-    </ul>
-</nav>
+            <?php if (isset($_SESSION['customer_id'])): ?>
+                <li>
+                    <a href="pages/cart.php" class="auth-btn cart-btn">
+                        🛒 Cart (<?php echo $cartCount; ?>)
+                    </a>
+                </li>
+                <li><a href="login/logout.php" class="auth-btn login-btn">Logout</a></li>
+                <li>
+                    <a href="pages/profile.php" class="profile-link">
+                        <img src="<?php echo $_SESSION['profile_picture'] ?? 'assets/pictures/default-profile.png'; ?>"
+                            alt="Profile" class="profile-pic">
+                    </a>
+                </li>
+            <?php else: ?>
+                <li><a href="login/login.php" class="auth-btn login-btn">Login</a></li>
+                <li><a href="login/register.php" class="auth-btn register-btn">Register</a></li>
+            <?php endif; ?>
+        </ul>
+    </nav>
 
     <section class="hero">
         <div class="hero-content">
@@ -644,82 +640,83 @@ if ($customer_id) {
             <p>Bringing the best of Filipino street and home delicacies to your doorstep. Taste nostalgia, love, and warmth in every bite.</p>
             <div class="hero-buttons">
                 <a href="./pages/menu.php">
-                <button class="btn btn-secondary" >View Menu</button>
+                    <button class="btn btn-secondary">View Menu</button>
                 </a>
             </div>
         </div>
         <div class="hero-image">
             <img src="assets/pictures/45b0e7c9-8bc1-4ef3-bac2-cfc07174d613.png" alt="Flakies Featured Dish">
         </div>
-        </section>
+    </section>
 
-        <section class="products" id="products">
-            <h2>Our Specialties</h2>
-            <p class="products-subtitle">Handcrafted with love, delivered with care</p>
+    <section class="products" id="products">
+        <h2>Our Specialties</h2>
+        <p class="products-subtitle">Handcrafted with love, delivered with care</p>
 
-            <div class="products-grid">
-                <?php
-                if ($result->num_rows > 0) {
-                    while ($row = $result->fetch_assoc()) {
-                        echo "<div class='product-card'>
-                                <div class='product-image'>";
-                        if (!empty($row['image'])) {
-                            echo "<img src='cashier/images_path/" . $row['image'] . "' 
-                                    alt='" . htmlspecialchars($row['name'], ENT_QUOTES) . "' 
-                                    style='width:100%;height:250px;object-fit:cover;border-radius:10px;'>";
-                        } else {
-                            echo "🍴"; // fallback emoji
-                        }
-                        echo "</div>
-                            <div class='product-info'>
-                                <h3>" . htmlspecialchars($row['name']) . "</h3>
-                                <p>" . htmlspecialchars($row['description']) . "</p>
-                                <div class='product-price'>₱" . $row['price'] . "</div>
-                                <p style='color:gray;font-size:0.9rem;'>Stock: " . $row['stock'] . "</p>
-                                <a href='pages/menu.php'><button class='order-btn'>View on menu</button></a>
-                            </div>
-                            </div>";
+        <div class="products-grid">
+            <?php
+            if (!empty($products)) {  // check the array instead of $result
+                foreach ($products as $row) {  // use the array
+                    echo "<div class='product-card'>
+                <div class='product-image'>";
+                    if (!empty($row['image'])) {
+                        echo "<img src='cashier/images_path/" . $row['image'] . "' 
+                    alt='" . htmlspecialchars($row['name'], ENT_QUOTES) . "' 
+                    style='width:100%;height:250px;object-fit:cover;border-radius:10px;'>";
+                    } else {
+                        echo "🍴"; // fallback emoji
                     }
-                } else {
-                    echo "<p style='text-align:center;'>No products available yet.</p>";
-                }
-                ?>
-                </div>
-        </section>
-
-        <section class="features" id="features">
-            <h2>Why Choose Flakies?</h2>
-
-            <div class="features-grid">
-                <div class="feature-item">
-                    <div class="feature-icon">✨</div>
-                    <h3>Authentic Flavors</h3>
-                    <p>Traditional recipes passed down through generations</p>
-                </div>
-
-                <div class="feature-item">
-                    <div class="feature-icon">🚚</div>
-                    <h3>Fresh Delivery</h3>
-                    <p>Same-day delivery to keep everything fresh and delicious</p>
-                </div>
-
-                <div class="feature-item">
-                    <div class="feature-icon">💯</div>
-                    <h3>Quality Assured</h3>
-                    <p>Premium ingredients and strict hygiene standards</p>
-                </div>
-
-                <div class="feature-item">
-                    <div class="feature-icon">💝</div>
-                    <h3>Made with Love</h3>
-                    <p>Every order is prepared with care and attention</p>
-                </div>
+                    echo "</div>
+            <div class='product-info'>
+                <h3>" . htmlspecialchars($row['name']) . "</h3>
+                <p>" . htmlspecialchars($row['description']) . "</p>
+                <div class='product-price'>₱" . $row['price'] . "</div>
+                <p style='color:gray;font-size:0.9rem;'>Stock: " . $row['stock'] . "</p>
+                <a href='pages/menu.php'><button class='order-btn'>View on menu</button></a>
             </div>
-        </section>
+            </div>";
+                }
+            } else {
+                echo "<p style='text-align:center;'>No products available yet.</p>";
+            }
+            ?>
+        </div>
 
-        <footer>
-            <p>&copy; 2025 Flakies. All rights reserved. Bringing authentic Filipino flavors to your table. 🇵🇭</p>
-        </footer>
+    </section>
+
+    <section class="features" id="features">
+        <h2>Why Choose Flakies?</h2>
+
+        <div class="features-grid">
+            <div class="feature-item">
+                <div class="feature-icon">✨</div>
+                <h3>Authentic Flavors</h3>
+                <p>Traditional recipes passed down through generations</p>
+            </div>
+
+            <div class="feature-item">
+                <div class="feature-icon">🚚</div>
+                <h3>Fresh Delivery</h3>
+                <p>Same-day delivery to keep everything fresh and delicious</p>
+            </div>
+
+            <div class="feature-item">
+                <div class="feature-icon">💯</div>
+                <h3>Quality Assured</h3>
+                <p>Premium ingredients and strict hygiene standards</p>
+            </div>
+
+            <div class="feature-item">
+                <div class="feature-icon">💝</div>
+                <h3>Made with Love</h3>
+                <p>Every order is prepared with care and attention</p>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <p>&copy; 2025 Flakies. All rights reserved. Bringing authentic Filipino flavors to your table. 🇵🇭</p>
+    </footer>
 </body>
 
 </html>

@@ -42,15 +42,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
             $message = "Please fill in all required fields.";
             $messageType = 'error';
         } else {
-            $updateQuery = "UPDATE customers SET 
-                            first_name = '$first_name',
-                            middle_name = '$middle_name',
-                            last_name = '$last_name',
-                            email = '$email',
-                            phone = '$phone',
-                            address = '$address',
-                            updated_at = NOW()
-                            WHERE id = $customer_id";
+            $updateQuery = "CALL UpdateCustomerInfo(?, ?, ?, ?, ?, ?, ?)";
 
             if ($conn->query($updateQuery)) {
                 $message = "Profile updated successfully!";
@@ -96,21 +88,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
 }
 
 // Fetch customer's order history
-$ordersQuery = $conn->query("
-    SELECT 
-        o.id,
-        o.total_amount,
-        o.payment_method,
-        o.status,
-        o.order_date,
-        COUNT(oi.id) AS item_count
-    FROM orders o
-    LEFT JOIN order_items oi ON o.id = oi.order_id
-    WHERE o.customer_id = $customer_id
-    GROUP BY o.id
-    ORDER BY o.order_date DESC
-    LIMIT 10
-");
+$ordersQuery = $conn->query("CALL GetCustomerOrderHistory($customer_id)");
 $orders = [];
 if ($ordersQuery) {
     while ($row = $ordersQuery->fetch_assoc()) {

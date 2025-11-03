@@ -10,32 +10,30 @@ if (!isset($_SESSION['customer_id']) || !isset($_GET['order_id'])) {
 $customer_id = $_SESSION['customer_id'];
 $order_id = intval($_GET['order_id']);
 
-$orderQuery = $conn->query("
-    SELECT o.*, c.first_name, c.last_name, c.email
-    FROM orders o
-    JOIN customers c ON o.customer_id = c.id
-    WHERE o.id = $order_id AND o.customer_id = $customer_id
-");
-
-if ($orderQuery->num_rows === 0) {
+// Fetch order details
+$order = [];
+$orderQuery = $conn->query("CALL GetCustomerOrderDetails($order_id, $customer_id)");
+if ($orderQuery && $orderQuery->num_rows > 0) {
+    $order = $orderQuery->fetch_assoc();
+    $orderQuery->free();
+    $conn->next_result();
+} else {
     header('Location: menu.php');
     exit;
 }
 
-$order = $orderQuery->fetch_assoc();
-
-$itemsQuery = $conn->query("
-    SELECT oi.*, p.name, p.image
-    FROM order_items oi
-    JOIN products p ON oi.product_id = p.id
-    WHERE oi.order_id = $order_id
-");
-
+// Fetch order items
 $items = [];
-while ($row = $itemsQuery->fetch_assoc()) {
-    $items[] = $row;
+$itemsQuery = $conn->query("CALL GetOrderItemsWithImage($order_id)");
+if ($itemsQuery) {
+    while ($row = $itemsQuery->fetch_assoc()) {
+        $items[] = $row;
+    }
+    $itemsQuery->free();
+    $conn->next_result();
 }
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 
