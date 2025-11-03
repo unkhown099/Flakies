@@ -702,7 +702,7 @@ document.querySelectorAll('#contactForm input, #contactForm textarea').forEach(f
     <script>
         document.addEventListener("DOMContentLoaded", () => {
             const sections = document.querySelectorAll(".section");
-            const revealSection = () => {
+            const revealSection = () => {l
                 sections.forEach(section => {
                     const position = section.getBoundingClientRect().top;
                     const screenHeight = window.innerHeight;
