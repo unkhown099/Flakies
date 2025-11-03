@@ -1,13 +1,11 @@
 <?php
 session_start();
 
-// Check if user is logged in
 if (!isset($_SESSION['staff_id']) || !isset($_SESSION['role'])) {
     header("Location: ../login.php");
     exit();
 }
 
-// Only allow admin to access this page
 if ($_SESSION['role'] !== 'admin') {
     echo "Access denied. You must be an admin to view this page.";
     exit();
@@ -19,25 +17,48 @@ $staff_id = $_SESSION['staff_id'];
 $role = $_SESSION['role'];
 $username = $_SESSION['username'];
 
-// Group filter (day, month, year)
-$group_by = isset($_GET['group_by']) ? $_GET['group_by'] : 'day';
+$group_by = $_GET['group_by'] ?? 'day';
 
-// Prepare SQL for analytics
+// === Combine Orders + Sales for Analytics ===
 switch ($group_by) {
     case 'month':
-        $sql = "SELECT DATE_FORMAT(date, '%Y-%m') AS period, SUM(sale_amount) AS total_sales 
+        $sql = "
+            SELECT period, SUM(total_sales) AS total_sales FROM (
+                SELECT DATE_FORMAT(order_date, '%Y-%m') AS period, SUM(total_amount) AS total_sales 
+                FROM orders 
+                GROUP BY period
+                UNION ALL
+                SELECT DATE_FORMAT(date, '%Y-%m') AS period, SUM(sale_amount) AS total_sales 
                 FROM sales 
-                GROUP BY period ORDER BY period ASC";
+                GROUP BY period
+            ) AS combined
+            GROUP BY period ORDER BY period ASC";
         break;
     case 'year':
-        $sql = "SELECT DATE_FORMAT(date, '%Y') AS period, SUM(sale_amount) AS total_sales 
+        $sql = "
+            SELECT period, SUM(total_sales) AS total_sales FROM (
+                SELECT DATE_FORMAT(order_date, '%Y') AS period, SUM(total_amount) AS total_sales 
+                FROM orders 
+                GROUP BY period
+                UNION ALL
+                SELECT DATE_FORMAT(date, '%Y') AS period, SUM(sale_amount) AS total_sales 
                 FROM sales 
-                GROUP BY period ORDER BY period ASC";
+                GROUP BY period
+            ) AS combined
+            GROUP BY period ORDER BY period ASC";
         break;
     default:
-        $sql = "SELECT DATE_FORMAT(date, '%Y-%m-%d') AS period, SUM(sale_amount) AS total_sales 
+        $sql = "
+            SELECT period, SUM(total_sales) AS total_sales FROM (
+                SELECT DATE_FORMAT(order_date, '%Y-%m-%d') AS period, SUM(total_amount) AS total_sales 
+                FROM orders 
+                GROUP BY period
+                UNION ALL
+                SELECT DATE_FORMAT(date, '%Y-%m-%d') AS period, SUM(sale_amount) AS total_sales 
                 FROM sales 
-                GROUP BY period ORDER BY period ASC";
+                GROUP BY period
+            ) AS combined
+            GROUP BY period ORDER BY period ASC";
         break;
 }
 
@@ -52,19 +73,46 @@ if ($result && $result->num_rows > 0) {
     }
 }
 
+// === Summary Cards (Daily, Monthly, Yearly combined) ===
+$todaySalesQuery = "
+    SELECT IFNULL(SUM(amount), 0) AS total FROM (
+        SELECT SUM(total_amount) AS amount FROM orders WHERE DATE(order_date) = CURDATE()
+        UNION ALL
+        SELECT SUM(sale_amount) AS amount FROM sales WHERE DATE(date) = CURDATE()
+    ) AS combined";
+$todaySales = $conn->query($todaySalesQuery)->fetch_assoc()['total'];
+
+$monthSalesQuery = "
+    SELECT IFNULL(SUM(amount), 0) AS total FROM (
+        SELECT SUM(total_amount) AS amount FROM orders 
+        WHERE YEAR(order_date) = YEAR(CURDATE()) AND MONTH(order_date) = MONTH(CURDATE())
+        UNION ALL
+        SELECT SUM(sale_amount) AS amount FROM sales 
+        WHERE YEAR(date) = YEAR(CURDATE()) AND MONTH(date) = MONTH(CURDATE())
+    ) AS combined";
+$monthSales = $conn->query($monthSalesQuery)->fetch_assoc()['total'];
+
+$yearSalesQuery = "
+    SELECT IFNULL(SUM(amount), 0) AS total FROM (
+        SELECT SUM(total_amount) AS amount FROM orders WHERE YEAR(order_date) = YEAR(CURDATE())
+        UNION ALL
+        SELECT SUM(sale_amount) AS amount FROM sales WHERE YEAR(date) = YEAR(CURDATE())
+    ) AS combined";
+$yearSales = $conn->query($yearSalesQuery)->fetch_assoc()['total'];
+
 $conn->close();
 
-// Helper function to format dates nicely
+// Format date labels
 function formatDate($date, $group_by)
 {
     $timestamp = strtotime($date);
     switch ($group_by) {
         case 'month':
-            return date("F", $timestamp); // e.g., January
+            return date("F", $timestamp);
         case 'year':
             return date("Y", $timestamp);
         default:
-            return date("M j, Y", $timestamp); // e.g., Jan 1, 2025
+            return date("M j, Y", $timestamp);
     }
 }
 
@@ -73,16 +121,14 @@ $formatted_periods = array_map(function ($p) use ($group_by) {
 }, $periods);
 ?>
 
-
 <!DOCTYPE html>
 <html lang="en">
 
 <head>
     <meta charset="UTF-8">
     <title>Flakies | Analytics</title>
-    <link rel="icon" type="image/x-icon" href="C:\xampp\htdocs\Flakies\assets\pictures\45b0e7c9-8bc1-4ef3-bac2-cfc07174d613.png">
+    <link rel="icon" type="image/x-icon" href="../assets/pictures/45b0e7c9-8bc1-4ef3-bac2-cfc07174d613.png">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
     <style>
         body {
             display: flex;
@@ -366,49 +412,24 @@ $formatted_periods = array_map(function ($p) use ($group_by) {
 </head>
 
 <body>
-    <!-- Sidebar -->
-
-<div class="sidebar">
-    <div class="logo">
-        <img src="../assets/pictures/45b0e7c9-8bc1-4ef3-bac2-cfc07174d613.png" alt="Flakies Logo">
-        <span>Flakies</span>
-    </div>
-    <div class="welcome">
-        <?php
-        if (isset($role)) {
-            echo ucfirst($role) . " Panel";
-        } else {
-            echo "Dashboard";
-        }
-        ?>
-    </div>
-    <ul class="menu">
-        <li><a href="dashboard.php">🏠 Dashboard</a></li>
-
-        <?php if (isset($role) && $role === 'admin'): ?>
+    <div class="sidebar">
+        <div class="logo">
+            <img src="../assets/pictures/45b0e7c9-8bc1-4ef3-bac2-cfc07174d613.png" alt="Flakies Logo">
+            <span>Flakies</span>
+        </div>
+        <div class="welcome"><?= ucfirst($role) ?> Panel</div>
+        <ul class="menu">
+            <li><a href="dashboard.php">🏠 Dashboard</a></li>
             <li><a href="manage_users.php">👥 Manage Users</a></li>
             <li><a href="manage_products.php">📦 Manage Products</a></li>
             <li><a href="manage_report.php">📊 Reports</a></li>
             <li><a href="manage_pages.php">📝 Manage Pages</a></li>
+        </ul>
+        <a href="../login/logout.php" class="btn-logout">🚪 Logout</a>
+    </div>
 
-        <?php elseif (isset($role) && $role === 'manager'): ?>
-            <li><a href="reports.php">📊 Reports</a></li>
-
-        <?php elseif (isset($role) && $role === 'cashier'): ?>
-            <li><a href="cashier/pos.php">💵 Point of Sale</a></li>
-
-        <?php elseif (isset($role) && $role === 'encoder'): ?>
-            <li><a href="encoder/inventory.php">📦 Inventory</a></li>
-        <?php endif; ?>
-    </ul>
-
-    <a href="../login/logout.php" class="btn-logout">🚪 Logout</a>
-</div>
-
-
-    <!-- Main Content -->
     <div class="main-content">
-        <h1>📈 Sales Analytics</h1>
+        <h1>📈 Combined Sales Analytics</h1>
 
         <div class="filter-container">
             <form method="GET">
@@ -424,18 +445,15 @@ $formatted_periods = array_map(function ($p) use ($group_by) {
         <div class="dashboard-cards">
             <div class="card">
                 <h3>Daily Sales</h3>
-                <p>$249.95</p>
-                <small>↑ 67% vs yesterday</small>
+                <p>₱<?= number_format($todaySales, 2); ?></p><small>As of today</small>
             </div>
             <div class="card">
                 <h3>Monthly Sales</h3>
-                <p>$2,942.32</p>
-                <small>↓ 36% vs last month</small>
+                <p>₱<?= number_format($monthSales, 2); ?></p><small>For <?= date("F Y"); ?></small>
             </div>
             <div class="card">
                 <h3>Yearly Sales</h3>
-                <p>$8,638.32</p>
-                <small>↑ 80% vs last year</small>
+                <p>₱<?= number_format($yearSales, 2); ?></p><small>For <?= date("Y"); ?></small>
             </div>
         </div>
 
@@ -446,12 +464,12 @@ $formatted_periods = array_map(function ($p) use ($group_by) {
 
     <script>
         const ctx = document.getElementById('salesChart').getContext('2d');
-        const chart = new Chart(ctx, {
+        new Chart(ctx, {
             type: 'bar',
             data: {
                 labels: <?= json_encode($formatted_periods); ?>,
                 datasets: [{
-                    label: 'Total Sales',
+                    label: 'Total Sales (Orders + POS)',
                     data: <?= json_encode($total_sales); ?>,
                     backgroundColor: '#6b4226',
                     borderColor: '#4e2d12',

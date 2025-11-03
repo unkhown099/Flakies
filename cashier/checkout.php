@@ -2,47 +2,54 @@
 session_start();
 require_once '../config/db_connect.php';
 
+header('Content-Type: application/json'); // Important for JSON responses
+
 if (!isset($_SESSION['user_id']) || $_SESSION['role'] != 'cashier') {
-    header("Location: login.php");
+    echo json_encode(['status' => 'error', 'message' => 'Unauthorized access']);
     exit;
 }
 
-// Assume your cart is stored in $_SESSION['cart']
-$cart = $_SESSION['cart'] ?? [];
+// Decode JSON data from the fetch request
+$data = json_decode(file_get_contents("php://input"), true);
+$cart = $data['cart'] ?? [];
 
 if (empty($cart)) {
-    echo "<script>alert('Cart is empty!'); window.location='pos.php';</script>";
+    echo json_encode(['status' => 'error', 'message' => 'Cart is empty']);
     exit;
 }
 
-// Calculate total
 $totalAmount = 0;
 foreach ($cart as $item) {
-    $totalAmount += $item['price'] * $item['quantity'];
+    $totalAmount += $item['price'] * $item['qty'];
 }
 
-// Get customer and payment details
-$customerName = $_POST['customer_name'] ?? 'Walk-in';
-$paymentMode = $_POST['payment_mode'] ?? 'Cash';
+$customerName = null ; // Default for now
 
-// Insert new order
-$orderStmt = $conn->prepare("INSERT INTO orders (customer_name, total_amount, payment_mode) VALUES (?, ?, ?)");
-$orderStmt->bind_param("sds", $customerName, $totalAmount, $paymentMode);
-$orderStmt->execute();
-$orderId = $orderStmt->insert_id;
+try {
+    $conn->begin_transaction();
 
-// Insert order items
-$itemStmt = $conn->prepare("INSERT INTO order_items (order_id, product_id, quantity, price) VALUES (?, ?, ?, ?)");
-foreach ($cart as $item) {
-    $itemStmt->bind_param("iiid", $orderId, $item['product_id'], $item['quantity'], $item['price']);
-    $itemStmt->execute();
+    // Insert order
+    $orderStmt = $conn->prepare("INSERT INTO orders (customer_id, total_amount, order_date) VALUES (?, ?, NOW())");
+    $orderStmt->bind_param("id", $customerName, $totalAmount);
+    $orderStmt->execute();
+    $orderId = $conn->insert_id;
 
-    // Optionally reduce stock
-    $conn->query("UPDATE products SET stock = stock - {$item['quantity']} WHERE id = {$item['product_id']}");
+    // Insert order items
+    $itemStmt = $conn->prepare("INSERT INTO order_items (order_id, product_id, quantity, price) VALUES (?, ?, ?, ?)");
+    foreach ($cart as $item) {
+        $itemStmt->bind_param("iiid", $orderId, $item['id'], $item['qty'], $item['price']);
+        $itemStmt->execute();
+
+        // Reduce stock
+        $updateStock = $conn->prepare("UPDATE products SET stock = stock - ? WHERE id = ?");
+        $updateStock->bind_param("ii", $item['qty'], $item['id']);
+        $updateStock->execute();
+    }
+
+    $conn->commit();
+
+    echo json_encode(['status' => 'success', 'message' => 'Checkout successful!', 'order_id' => $orderId]);
+} catch (Exception $e) {
+    $conn->rollback();
+    echo json_encode(['status' => 'error', 'message' => 'Transaction failed: ' . $e->getMessage()]);
 }
-
-// Clear the cart
-unset($_SESSION['cart']);
-
-echo "<script>alert('Checkout successful! Order ID: $orderId'); window.location='cashierdashboard.php';</script>";
-?>
