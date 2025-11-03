@@ -467,7 +467,7 @@ $conn->close();
         <div class="modal-body">
           <input type="hidden" name="section" id="modalSection">
           <label for="modalContent">Content:</label>
-          <textarea name="content" id="modalContent" required></textarea>
+          <textarea name="content" id="modalContent"></textarea>
           <label>Preview:</label>
           <div id="livePreview" style="padding:10px; border:1px solid #ccc; border-radius:6px; min-height:100px;">
           </div>
