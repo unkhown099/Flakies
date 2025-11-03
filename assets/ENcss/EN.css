@@ -140,8 +140,11 @@ body {
     box-sizing: border-box;
     overflow-y: auto;
 }
-
-
+.ENmain-content .INENtable-wrapper {
+  border-radius: 15px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+  background: #2d2d2d;
+}
 .ENmain-content .INENtable {
     text-align: center;
     overflow-x: auto;
@@ -149,10 +152,10 @@ body {
     width: 100%;
     table-layout: fixed;
     word-wrap: break-word;
-}
-.ENmain-content .INENtable-wrapper {
-    max-height: 400px;
-    overflow-y: auto;
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+    color: #fff;
 }
 
 .INENtable td {
@@ -232,21 +235,6 @@ body {
 }
 
 /* ===== TABLE ===== */
-.ENmain-content .INENtable-wrapper {
-  max-height: 400px;
-  overflow-y: auto;
-  border-radius: 15px;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.15);
-  background: #2d2d2d;
-}
-
-.ENmain-content .INENtable {
-  width: 100%;
-  border-collapse: collapse;
-  table-layout: fixed;
-  color: #fff;
-}
-
 .INENtable th, 
 .INENtable td {
   padding: 14px 10px;
@@ -255,8 +243,6 @@ body {
 }
 
 .INENtable th {
-  position: sticky;
-  top: 0;
   background: #1a1a1a;
   color: #d9ed42;
   text-transform: uppercase;
@@ -310,6 +296,36 @@ body {
   background: linear-gradient(135deg, #c5c5c5, #979797);
   transform: scale(1.05);
   cursor: pointer;
+}
+
+.INENpagination-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 15px;
+  gap: 10px;
+}
+
+.page-btn {
+  background-color: #1a1a1a;
+  color: #d9ed42;
+  border: none;
+  padding: 8px 15px;
+  border-radius: 25px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.page-btn:hover {
+  background-color: #d9ed42;
+  color: #1a1a1a;
+}
+
+.page-btn:disabled {
+  background-color: #333;
+  color: #777;
+  cursor: not-allowed;
 }
 
 /* ===== MODAL ===== */

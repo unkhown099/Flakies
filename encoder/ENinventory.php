@@ -67,6 +67,7 @@ $username = $_SESSION['username'];
                         <th class="table-header">Image</th>
                         <th class="table-header ">Created at</th>
                         <th class="table-header ">Updated at</th>
+                        <th class="table-header ">Actions</th>
                     </tr>
                 </thead>
 
@@ -89,18 +90,23 @@ $username = $_SESSION['username'];
                                 <button class="INENdel-btn" data-id="<?php echo $row['id']; ?>">Delete</button>
                                 <button 
                                     class="INENedit-btn"
-                                    data-id="<?php echo $row['id']; ?>"
+                                    data-id="<?php echo ($row['id']); ?>"
                                     data-name="<?php echo ($row['name']); ?>"
                                     data-category="<?php echo ($row['category']); ?>"
                                     data-description="<?php echo ($row['description']); ?>"
-                                    data-price="<?php echo $row['price']; ?>"
-                                    data-stock="<?php echo $row['stock']; ?>"
+                                    data-price="<?php echo ($row['price']); ?>"
+                                    data-stock="<?php echo ($row['stock']); ?>"
                                 >Edit</button>
                             </td>
                         </tr>
                     <?php endwhile; ?>
                 </tbody>
             </table>
+        </div>
+        <div class="INENpagination-container">
+            <button id="prev-btn" class="page-btn">Previous</button>
+            <span id="page-info"></span>
+            <button id="next-btn" class="page-btn">Next</button>
         </div>
         <?php
         mysqli_close($conn);
@@ -252,7 +258,53 @@ $username = $_SESSION['username'];
     document.querySelector('.INENedit-close-btn').addEventListener('click', () => {
         document.getElementById('INENeditModal').style.display = 'none';
     });
+
+    document.addEventListener('DOMContentLoaded', function () {
+    const tableBody = document.getElementById('productTableBody');
+    const rows = Array.from(tableBody.getElementsByTagName('tr'));
+    const itemsPerPage = 10; // 👈 adjust number of rows per page
+    let currentPage = 1;
+
+    const prevBtn = document.getElementById('prev-btn');
+    const nextBtn = document.getElementById('next-btn');
+    const pageInfo = document.getElementById('page-info');
+
+    function renderPage(page) {
+      const totalPages = Math.ceil(rows.length / itemsPerPage);
+
+      // Hide all rows
+      rows.forEach(row => row.style.display = 'none');
+
+      // Show only the current page’s rows
+      const start = (page - 1) * itemsPerPage;
+      const end = start + itemsPerPage;
+      rows.slice(start, end).forEach(row => row.style.display = '');
+
+      // Update pagination info
+      pageInfo.textContent = `Page ${page} of ${totalPages}`;
+
+      // Enable/disable buttons
+      prevBtn.disabled = page === 1;
+      nextBtn.disabled = page === totalPages;
+    }
+
+    // Button listeners
+    prevBtn.addEventListener('click', () => {
+      if (currentPage > 1) {
+        currentPage--;
+        renderPage(currentPage);
+      }
+    });
+
+    nextBtn.addEventListener('click', () => {
+      if (currentPage < Math.ceil(rows.length / itemsPerPage)) {
+        currentPage++;
+        renderPage(currentPage);
+      }
+    });
+
+    // Initialize
+    renderPage(currentPage);
+  });
 </script>
-
-
 </html>
