@@ -430,7 +430,7 @@ $conn->close();
       <li><a href="dashboard.php">🏠 Dashboard</a></li>
       <li><a href="manage_users.php">👥 Manage Users</a></li>
       <li><a href="manage_products.php">📦 Manage Products</a></li>
-      <a href="manage_report.php">📊 Reports</a>
+      <li><a href="manage_schedule.php">� Staff Schedule</a></li>
       <li><a href="manage_pages.php" class="active">📝 Manage Pages</a></li>
     </ul>
     <a href="../login/logout.php" class="btn-logout">🚪 Logout</a>

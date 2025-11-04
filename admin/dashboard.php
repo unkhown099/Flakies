@@ -419,10 +419,10 @@ $formatted_periods = array_map(function ($p) use ($group_by) {
         </div>
         <div class="welcome"><?= ucfirst($role) ?> Panel</div>
         <ul class="menu">
-            <li><a href="dashboard.php">🏠 Dashboard</a></li>
+            <li><a href="dashboard.php" class="active">🏠 Dashboard</a></li>
             <li><a href="manage_users.php">👥 Manage Users</a></li>
             <li><a href="manage_products.php">📦 Manage Products</a></li>
-            <li><a href="manage_report.php">📊 Reports</a></li>
+            <li><a href="manage_schedule.php">� Staff Schedule</a></li>
             <li><a href="manage_pages.php">📝 Manage Pages</a></li>
         </ul>
         <a href="../login/logout.php" class="btn-logout">🚪 Logout</a>

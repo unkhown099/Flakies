@@ -1,81 +1,28 @@
 <?php
 session_start();
 require_once '../config/db_connect.php';
-header('Content-Type: application/json');
 
 // Ensure cashier is logged in
 if (!isset($_SESSION['user_id']) || $_SESSION['role'] != 'cashier') {
-    echo json_encode(['status' => 'error', 'message' => 'Unauthorized access']);
+    header("Location: ../login.php");
     exit;
 }
 
-// Get the JSON data from the frontend
-$data = json_decode(file_get_contents('php://input'), true);
+// Fetch products grouped by category
+$query = "SELECT * FROM products WHERE deleted = 0 ORDER BY category, name";
+$productsResult = $conn->query($query);
 
-if (empty($data['cart'])) {
-    echo json_encode(['status' => 'error', 'message' => 'Cart is empty']);
-    exit;
+$categories = [];
+while ($product = $productsResult->fetch_assoc()) {
+    $category = $product['category'] ?? 'Other';
+    $categories[$category][] = $product;
 }
 
-// Initialize values
-$cart = $data['cart'];
-$totalAmount = 0;
-$cashier_id = $_SESSION['user_id']; // the cashier currently logged in
-$staff_id = $_SESSION['user_id'];   // same as cashier, if you have staff accounts
-$customer_id = null;                // no customer in POS (walk-in)
-$status = 'completed';
+// Total number of orders
+$totalOrders = $conn->query("SELECT COUNT(*) as total FROM orders")->fetch_assoc()['total'];
 
-// Calculate total
-foreach ($cart as $item) {
-    $totalAmount += $item['price'] * $item['qty'];
-}
-
-$conn->begin_transaction();
-
-try {
-    // Insert into sales table
-    $stmt = $conn->prepare("
-        INSERT INTO sales (date, sale_amount, product_id, customer_id, staff_id, status, cashier_id, created_at, updated_at)
-        VALUES (NOW(), ?, NULL, ?, ?, ?, ?, NOW(), NOW())
-    ");
-    $stmt->bind_param("diiis", $totalAmount, $customer_id, $staff_id, $status, $cashier_id);
-    $stmt->execute();
-    $sale_id = $conn->insert_id;
-
-    // Insert each product into sales_products
-    $sp_stmt = $conn->prepare("
-        INSERT INTO sales_products (sales_id, product_id, quantity, price, created_at)
-        VALUES (?, ?, ?, ?, NOW())
-    ");
-
-    foreach ($cart as $item) {
-        $product_id = $item['id'];
-        $qty = $item['qty'];
-        $price = $item['price'];
-        $sp_stmt->bind_param("iiid", $sale_id, $product_id, $qty, $price);
-        $sp_stmt->execute();
-
-        // Update stock
-        $updateStock = $conn->prepare("UPDATE products SET stock = stock - ? WHERE id = ?");
-        $updateStock->bind_param("ii", $qty, $product_id);
-        $updateStock->execute();
-    }
-
-    $conn->commit();
-
-    echo json_encode([
-        'status' => 'success',
-        'message' => 'Sale recorded successfully!'
-    ]);
-} catch (Exception $e) {
-    $conn->rollback();
-    echo json_encode([
-        'status' => 'error',
-        'message' => 'Transaction failed: ' . $e->getMessage()
-    ]);
-}
+// Render the page
 ?>
-
 <!DOCTYPE html>
 <html lang="en">
 
@@ -89,6 +36,7 @@ try {
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
 
     <style>
+        /* Same styles as before */
         * {
             margin: 0;
             padding: 0;
@@ -112,6 +60,7 @@ try {
             color: #fff;
         }
 
+        /* Styles for POS */
         .card {
             background: #2d2d2d;
             color: #fff;
@@ -119,15 +68,6 @@ try {
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             transition: transform 0.2s, box-shadow 0.2s, background-color 0.2s;
             cursor: pointer;
-        }
-
-        .card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 12px rgba(0, 0, 0, 0.15);
-        }
-
-        .card.selected {
-            background-color: #28a745 !important;
         }
 
         .card-img-wrapper {
@@ -143,7 +83,17 @@ try {
 
         .card-img-top {
             max-height: 100%;
+            width: auto;
             object-fit: contain;
+        }
+
+        .card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .card.selected {
+            background-color: #28a745 !important;
         }
 
         .disabled-card {
@@ -155,10 +105,6 @@ try {
             background-color: #28a745;
             border: none;
             border-radius: 8px;
-        }
-
-        .btn-success:hover {
-            background-color: #218838;
         }
 
         .btn-danger {
@@ -186,72 +132,6 @@ try {
         .cart-summary {
             color: black;
         }
-
-        /* Make total/items text black */
-
-        #toastContainer {
-            border-radius: 8px;
-        }
-
-        .toast-container {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            z-index: 1050;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-
-        .toast {
-            transform: translateX(150%);
-            opacity: 0;
-            transition: transform 0.5s ease, opacity 0.5s ease;
-        }
-
-        .toast.show-toast {
-            transform: translateX(0);
-            opacity: 1;
-        }
-
-        .toast.hide-toast {
-            transform: translateX(150%);
-            opacity: 0;
-        }
-
-        .qty-btn {
-            cursor: pointer;
-            padding: 2px 6px;
-            margin: 0 2px;
-        }
-
-        .nav-links {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 2rem;
-            list-style: none;
-            margin: 0;
-            padding: 0;
-        }
-
-        .nav-links a {
-            color: #f4e04d;
-            text-decoration: none;
-            font-weight: 500;
-            transition: color 0.3s;
-        }
-
-        .nav-links a:hover {
-            color: #667eea;
-        }
-
-
-        @media (max-width: 768px) {
-            .card-img-wrapper {
-                height: 120px;
-            }
-        }
     </style>
 </head>
 
@@ -260,23 +140,11 @@ try {
     <!-- Navbar -->
     <nav class="navbar navbar-expand-lg navbar-custom py-2">
         <div class="container-fluid d-flex align-items-center justify-content-between">
-            <!-- Left: Logo -->
             <a class="navbar-brand d-flex align-items-center" href="#">
                 <img src="../assets/pictures/45b0e7c9-8bc1-4ef3-bac2-cfc07174d613.png" alt="Flakies Logo" height="30" class="me-2">
                 <span>Flakies POS</span>
             </a>
 
-            <!-- Center: Nav Links -->
-            <div class="collapse navbar-collapse justify-content-center" id="navbarNav">
-                <ul class="nav-links">
-                    <li><a href="cashierdashboard.php"><i class="fa fa-cash-register"></i> Dashboard</a></li>
-                    <li><a href="products.php"><i class="fa fa-box"></i> Products</a></li>
-                    <li><a href="orders.php"><i class="fa fa-receipt"></i> Orders</a></li>
-                    <li><a href="../login/logout.php" class="cart-btn"><i class="fa fa-sign-out-alt"></i> Logout</a></li>
-                </ul>
-            </div>
-
-            <!-- Right: Date and Orders -->
             <div class="d-flex align-items-center text-white gap-3">
                 <span class="navbar-text" id="dateTime"></span>
                 <span class="navbar-text text-warning">
@@ -284,8 +152,8 @@ try {
                     <strong><?php echo $totalOrders; ?></strong>
                 </span>
             </div>
+        </div>
     </nav>
-
 
     <script>
         function updateDateTime() {
@@ -307,70 +175,36 @@ try {
 
     <div class="container-fluid mt-4">
         <div class="row">
-
-            <!-- Products/Add-ons/Drinks -->
-            <div class="col-md-6">
-                <h4>Available Products</h4>
-                <div class="row g-3" id="productList">
-                    <?php foreach ($products as $product):
-                        $isInactive = $product['status'] == 1;
-                        $isOutOfStock = $product['stock'] <= 0;
-                        $disabled = $isInactive || $isOutOfStock;
-                        $cardClass = $disabled ? 'bg-secondary text-white disabled-card' : 'product-card';
-                        $style = $disabled ? 'pointer-events:none; opacity:0.6;' : '';
-                    ?>
-                        <div class="col-md-4 mb-3">
-                            <div class="card h-100 <?php echo $cardClass; ?>"
-                                data-id="<?php echo $product['id']; ?>"
-                                data-name="<?php echo htmlspecialchars($product['name']); ?>"
-                                data-price="<?php echo $product['price']; ?>"
-                                data-stock="<?php echo $product['stock']; ?>"
-                                style="<?php echo $style; ?>">
-                                <div class="card-img-wrapper">
-                                    <img src="images_path/<?php echo !empty($product['image']) ? $product['image'] : 'default-product.png'; ?>" class="card-img-top" alt="<?php echo htmlspecialchars($product['name']); ?>">
-                                </div>
-                                <div class="card-body">
-                                    <h5 class="card-title"><?php echo htmlspecialchars($product['name']); ?></h5>
-                                    <p>₱<?php echo number_format($product['price'], 2); ?></p>
-                                </div>
-                            </div>
-                        </div>
-                    <?php endforeach; ?>
-                </div>
-
-                <h4 class="mt-4">Available Add-ons</h4>
-                <div class="row g-3" id="addonList">
-                    <?php foreach ($addons as $addon): ?>
-                        <div class="col-md-4 mb-3">
-                            <div class="card h-100 addon-card" data-id="<?php echo $addon['id']; ?>" data-name="<?php echo htmlspecialchars($addon['name']); ?>" data-price="<?php echo $addon['price']; ?>" data-stock="<?php echo $addon['stock']; ?>">
-                                <div class="card-img-wrapper">
-                                    <img src="images_path/<?php echo !empty($addon['image']) ? $addon['image'] : 'default-addon.png'; ?>" class="card-img-top" alt="<?php echo htmlspecialchars($addon['name']); ?>">
-                                </div>
-                                <div class="card-body">
-                                    <h5 class="card-title"><?php echo htmlspecialchars($addon['name']); ?></h5>
-                                    <p>₱<?php echo number_format($addon['price'], 2); ?></p>
+            <!-- Product display section -->
+            <div class="col-md-8">
+                <?php foreach ($categories as $category => $products): ?>
+                    <h4 class="mt-4"><?php echo ucfirst($category); ?></h4>
+                    <div class="row g-3" id="<?php echo strtolower($category); ?>List">
+                        <?php foreach ($products as $product):
+                            $isOutOfStock = $product['stock'] <= 0;
+                            $disabled = $isOutOfStock;
+                            $cardClass = $disabled ? 'bg-secondary text-white disabled-card' : 'card product-card';
+                            $style = $disabled ? 'pointer-events:none; opacity:0.6;' : '';
+                        ?>
+                            <div class="col-md-4 mb-3">
+                                <div class="card h-100 <?php echo $cardClass; ?>"
+                                    data-id="<?php echo $product['id']; ?>"
+                                    data-name="<?php echo htmlspecialchars($product['name']); ?>"
+                                    data-price="<?php echo $product['price']; ?>"
+                                    data-stock="<?php echo $product['stock']; ?>"
+                                    style="<?php echo $style; ?>">
+                                    <div class="card-img-wrapper">
+                                        <img src="images_path/<?php echo !empty($product['image']) ? $product['image'] : 'default-product.png'; ?>" class="card-img-top" alt="<?php echo htmlspecialchars($product['name']); ?>">
+                                    </div>
+                                    <div class="card-body">
+                                        <h5 class="card-title"><?php echo htmlspecialchars($product['name']); ?></h5>
+                                        <p>₱<?php echo number_format($product['price'], 2); ?></p>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    <?php endforeach; ?>
-                </div>
-
-                <h4 class="mt-4">Available Drinks</h4>
-                <div class="row g-3" id="drinkList">
-                    <?php foreach ($drinks as $drink): ?>
-                        <div class="col-md-4 mb-3">
-                            <div class="card h-100 drink-card" data-id="<?php echo $drink['id']; ?>" data-name="<?php echo htmlspecialchars($drink['name']); ?>" data-price="<?php echo $drink['price']; ?>" data-stock="<?php echo $drink['stock']; ?>">
-                                <div class="card-img-wrapper">
-                                    <img src="images_path/<?php echo !empty($drink['image']) ? $drink['image'] : 'default-drink.png'; ?>" class="card-img-top" alt="<?php echo htmlspecialchars($drink['name']); ?>">
-                                </div>
-                                <div class="card-body">
-                                    <h5 class="card-title"><?php echo htmlspecialchars($drink['name']); ?></h5>
-                                    <p>₱<?php echo number_format($drink['price'], 2); ?></p>
-                                </div>
-                            </div>
-                        </div>
-                    <?php endforeach; ?>
-                </div>
+                        <?php endforeach; ?>
+                    </div>
+                <?php endforeach; ?>
             </div>
 
             <!-- Cart -->
@@ -420,36 +254,49 @@ try {
         function renderCart() {
             const cartItems = document.getElementById('cartItems');
             cartItems.innerHTML = '';
-            let total = 0,
-                totalItems = 0;
+            let total = 0, totalItems = 0;
+
             cart.forEach((item, index) => {
                 const itemTotal = item.price * item.qty;
                 total += itemTotal;
                 totalItems += item.qty;
+
                 const tr = document.createElement('tr');
-                tr.innerHTML = `<td>${item.name}</td>
-        <td>₱${item.price.toFixed(2)}</td>
-        <td>
-            <button class="qty-btn btn btn-sm btn-secondary" data-action="minus" data-index="${index}">-</button>
-            <span class="mx-1">${item.qty}</span>
-            <button class="qty-btn btn btn-sm btn-secondary" data-action="plus" data-index="${index}">+</button>
-        </td>
-        <td>₱${itemTotal.toFixed(2)}</td>
-        <td><button class="btn btn-danger btn-sm remove-item" data-index="${index}"><i class="fa fa-trash"></i></button></td>`;
+                tr.innerHTML = `
+                    <td>${item.name}</td>
+                    <td>₱${item.price.toFixed(2)}</td>
+                    <td>
+                        <button class="qty-btn btn btn-sm btn-secondary" data-action="minus" data-index="${index}">-</button>
+                        <span class="mx-1">${item.qty}</span>
+                        <button class="qty-btn btn btn-sm btn-secondary" data-action="plus" data-index="${index}">+</button>
+                    </td>
+                    <td>₱${itemTotal.toFixed(2)}</td>
+                    <td>
+                        <button class="btn btn-danger btn-sm remove-item" data-index="${index}">
+                            <i class="fa fa-trash"></i>
+                        </button>
+                    </td>
+                `;
                 cartItems.appendChild(tr);
             });
+
             document.getElementById('cartTotal').textContent = total.toFixed(2);
             document.getElementById('totalItems').textContent = totalItems;
 
+            // Add event listeners for quantity buttons
             document.querySelectorAll('.qty-btn').forEach(btn => {
                 btn.addEventListener('click', function() {
                     const idx = parseInt(this.dataset.index);
-                    if (this.dataset.action === 'plus') cart[idx].qty++;
-                    else cart[idx].qty = Math.max(1, cart[idx].qty - 1);
+                    if (this.dataset.action === 'plus') {
+                        cart[idx].qty++;
+                    } else {
+                        cart[idx].qty = Math.max(1, cart[idx].qty - 1);
+                    }
                     renderCart();
                 });
             });
 
+            // Add event listeners for remove buttons
             document.querySelectorAll('.remove-item').forEach(btn => {
                 btn.addEventListener('click', function() {
                     const idx = parseInt(this.dataset.index);
@@ -461,8 +308,8 @@ try {
             });
         }
 
-        // Card selection
-        document.querySelectorAll('.product-card, .addon-card, .drink-card').forEach(card => {
+        // Product selection
+        document.querySelectorAll('.card').forEach(card => {
             card.addEventListener('click', function() {
                 const id = parseInt(this.dataset.id);
                 const name = this.dataset.name;
@@ -474,19 +321,13 @@ try {
                     cart = cart.filter(item => item.id !== id);
                 } else {
                     this.classList.add('selected');
-                    cart.push({
-                        id,
-                        name,
-                        price,
-                        qty: 1
-                    });
-                    showOrderNotification(`"${name}" added to cart!`);
+                    cart.push({ id, name, price, qty: 1 });
                 }
                 renderCart();
             });
         });
 
-        // Checkout
+        // Checkout button
         document.getElementById('checkoutBtn').addEventListener('click', function() {
             if (cart.length === 0) {
                 Swal.fire('Cart is empty', 'Please add items to cart before checkout', 'warning');
@@ -494,32 +335,30 @@ try {
             }
 
             fetch('checkout.php', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        cart
-                    })
-                })
-                .then(res => res.json())
-                .then(data => {
-                    if (data.status === 'success') {
-                        Swal.fire('Success', data.message, 'success');
-                        cart = [];
-                        renderCart();
-                        document.querySelectorAll('.product-card.selected, .addon-card.selected, .drink-card.selected').forEach(c => c.classList.remove('selected'));
-                    } else {
-                        Swal.fire('Error', data.message, 'error');
-                    }
-                })
-                .catch(err => {
-                    Swal.fire('Error', 'Something went wrong', 'error');
-                    console.error(err);
-                });
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ cart })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    Swal.fire('Success', data.message, 'success');
+                    cart = [];
+                    renderCart();
+                    document.querySelectorAll('.card.selected').forEach(c => c.classList.remove('selected'));
+                } else {
+                    Swal.fire('Error', data.message, 'error');
+                }
+            })
+            .catch(err => {
+                Swal.fire('Error', 'Something went wrong', 'error');
+                console.error(err);
+            });
         });
 
-        // Cancel Cart
+        // Cancel button
         document.getElementById('cancelBtn').addEventListener('click', function() {
             if (cart.length === 0) {
                 Swal.fire('Cart is already empty', '', 'info');
@@ -537,43 +376,11 @@ try {
                 if (result.isConfirmed) {
                     cart = [];
                     renderCart();
-                    document.querySelectorAll('.product-card.selected, .addon-card.selected, .drink-card.selected')
-                        .forEach(c => c.classList.remove('selected'));
+                    document.querySelectorAll('.card.selected').forEach(c => c.classList.remove('selected'));
                     Swal.fire('Cart cleared', '', 'success');
                 }
             });
         });
-
-        // Toast Notification
-        function showOrderNotification(message) {
-            const notification = document.getElementById('orderNotification');
-            const toastEl = notification.querySelector('.toast');
-            toastEl.querySelector('.toast-body').innerHTML = `<i class="fa fa-bell"></i> ${message}`;
-
-            toastEl.classList.add('show-toast');
-            toastEl.classList.remove('hide-toast');
-
-            setTimeout(() => {
-                toastEl.classList.remove('show-toast');
-                toastEl.classList.add('hide-toast');
-            }, 5000);
-        }
-
-        // Logout confirmation
-        function confirmLogout() {
-            Swal.fire({
-                title: 'Are you sure you want to log out?',
-                text: 'You will be logged out of the system.',
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonText: 'Yes, Log out',
-                cancelButtonText: 'No, Stay Logged In'
-            }).then(result => {
-                if (result.isConfirmed) {
-                    window.location.href = "logout.php";
-                }
-            });
-        }
     </script>
 </body>
 
