@@ -631,10 +631,11 @@ $conn->close();
         </div>
         <div class="welcome">Manager Panel</div>
         <ul class="menu">
-    <li><a href="dashboard.php" class="active">🏠 Dashboard</a></li>
-    <li><a href="../manager/inventory.php">📦 Inventory</a></li>
-    <li><a href="../manager/reports.php">📊 Reports</a></li>
-</ul>
+            <li><a href="dashboard.php">🏠 Dashboard</a></li>
+            <li><a href="../manager/inventory.php">📦 Inventory</a></li>
+            <li><a href="../manager/reports.php">📊 Reports</a></li>
+            <li><a href="../manager/messages.php" class="active">💬 Messages</a></li>
+        </ul>
         <a href="../login/logout.php" class="btn-logout">🚪 Logout</a>
     </div>
 
