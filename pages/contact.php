@@ -6,38 +6,57 @@ $successMessage = '';
 $errorMessage = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // Redirect only when the user submits and is not logged in
-
     $name = $conn->real_escape_string(trim($_POST['name'] ?? ''));
     $email = $conn->real_escape_string(trim($_POST['email'] ?? ''));
     $phone = $conn->real_escape_string(trim($_POST['phone'] ?? ''));
     $subject = $conn->real_escape_string(trim($_POST['subject'] ?? ''));
     $message = $conn->real_escape_string(trim($_POST['message'] ?? ''));
 
+    // Check required fields
     if (empty($name) || empty($email) || empty($subject) || empty($message)) {
         $errorMessage = "Please fill in all required fields.";
     } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
         $errorMessage = "Please enter a valid email address.";
     } else {
-        // Use stored procedure
-        $stmt = $conn->prepare("CALL InsertContactMessage(?, ?, ?, ?, ?)");
-        $stmt->bind_param("sssss", $name, $email, $phone, $subject, $message);
+        try {
+            // Check if stored procedure exists, otherwise use direct insert
+            $procedureCheck = $conn->query("
+                SELECT COUNT(*) as exists_flag 
+                FROM information_schema.ROUTINES 
+                WHERE ROUTINE_SCHEMA = DATABASE() 
+                AND ROUTINE_NAME = 'InsertContactMessage' 
+                AND ROUTINE_TYPE = 'PROCEDURE'
+            ");
+            $procedureExists = $procedureCheck && $procedureCheck->fetch_assoc()['exists_flag'] > 0;
+            
+            if ($procedureExists) {
+                // Use stored procedure
+                $stmt = $conn->prepare("CALL InsertContactMessage(?, ?, ?, ?, ?)");
+                $stmt->bind_param("sssss", $name, $email, $phone, $subject, $message);
+            } else {
+                // Use direct insert
+                $stmt = $conn->prepare("INSERT INTO contact_messages (name, email, phone, subject, message) VALUES (?, ?, ?, ?, ?)");
+                $stmt->bind_param("sssss", $name, $email, $phone, $subject, $message);
+            }
 
-        if ($stmt->execute()) {
-            $successMessage = "Thank you for your message! We'll get back to you soon.";
-            $name = $email = $phone = $subject = $message = '';
-        } else {
-            $errorMessage = "There was an error sending your message. Please try again.";
+            if ($stmt->execute()) {
+                $successMessage = "Thank you for your message! We'll get back to you soon.";
+                // Clear form fields
+                $name = $email = $phone = $subject = $message = '';
+            } else {
+                $errorMessage = "There was an error sending your message. Please try again.";
+            }
+            $stmt->close();
+        } catch (Exception $e) {
+            $errorMessage = "Database error: " . $e->getMessage();
         }
-
-        $stmt->close();
     }
 }
 
-// Get customer ID if logged in
+// Get customer ID if logged in (for cart count only)
 $customer_id = $_SESSION['customer_id'] ?? null;
 
-// Fetch number of items in cart
+// Fetch number of items in cart (only if logged in)
 $cartCount = 0;
 if ($customer_id) {
     $cartQuery = $conn->query("SELECT SUM(quantity) as total_qty FROM cart WHERE customer_id = $customer_id");
@@ -424,6 +443,16 @@ if ($customer_id) {
         font-size: 0.9rem;
     }
 
+    .guest-notice {
+        background: #fff4b3;
+        border-left: 4px solid #ffc107;
+        color: #7a5900;
+        padding: 1rem;
+        border-radius: 10px;
+        margin-bottom: 1.5rem;
+        font-weight: 500;
+    }
+
     /* Section appear animation */
     .section {
         opacity: 0;
@@ -493,6 +522,11 @@ if ($customer_id) {
         <div class="hero-section section" style="--delay: 0s;">
             <h1>Get in Touch 💬</h1>
             <p>Have questions? We'd love to hear from you. Contact us anytime!</p>
+            <?php if (!isset($_SESSION['customer_id'])): ?>
+                <div class="guest-notice">
+                    💡 <strong>Guest User:</strong> You can send us a message without logging in! We'll reply to your email address.
+                </div>
+            <?php endif; ?>
         </div>
 
         <div class="content-wrapper">
@@ -557,19 +591,19 @@ if ($customer_id) {
                     <div class="form-row">
                         <div class="form-group">
                             <label for="name">Name <span class="required">*</span></label>
-                            <input type="text" id="name" name="name" value="<?php echo htmlspecialchars($name ?? ''); ?>">
+                            <input type="text" id="name" name="name" value="<?php echo htmlspecialchars($name ?? ''); ?>" placeholder="Your full name">
                             <small class="required-message">*Required</small>
                         </div>
                         <div class="form-group">
                             <label for="email">Email <span class="required">*</span></label>
-                            <input type="email" id="email" name="email" value="<?php echo htmlspecialchars($email ?? ''); ?>">
+                            <input type="email" id="email" name="email" value="<?php echo htmlspecialchars($email ?? ''); ?>" placeholder="your.email@example.com">
                             <small class="required-message">*Required / Invalid Email</small>
                         </div>
                     </div>
 
                     <div class="form-group">
                         <label for="phone">Phone Number</label>
-                        <input type="tel" id="phone" name="phone" value="<?php echo htmlspecialchars($phone ?? ''); ?>" placeholder="+63 917 000 0000">
+                        <input type="tel" id="phone" name="phone" value="<?php echo htmlspecialchars($phone ?? ''); ?>" placeholder="+63 917 000 0000 (optional)">
                     </div>
 
                     <div class="form-group">
@@ -580,30 +614,37 @@ if ($customer_id) {
 
                     <div class="form-group">
                         <label for="message">Message <span class="required">*</span></label>
-                        <textarea id="message" name="message" placeholder="Tell us more..."><?php echo htmlspecialchars($message ?? ''); ?></textarea>
+                        <textarea id="message" name="message" placeholder="Tell us more about your inquiry..."><?php echo htmlspecialchars($message ?? ''); ?></textarea>
                         <small class="required-message">*Required</small>
                     </div>
 
                     <button type="submit" class="submit-btn">Send Message ✉️</button>
                 </form>
+
+                <?php if (!isset($_SESSION['customer_id'])): ?>
+                    <div style="text-align: center; margin-top: 1rem;">
+                        <p style="color: #666; font-size: 0.9rem;">
+                            💡 <strong>Tip:</strong> 
+                            <a href="../login/register.php" style="color: #d4a942; font-weight: 600;">Create an account</a> 
+                            to track your messages and get faster responses!
+                        </p>
+                    </div>
+                <?php endif; ?>
             </div>
         </div>
 
         <!-- Map Section -->
         <div class="map-section section" style="--delay: 0.6s;">
             <h2>Find Us Here</h2>
-            <!-- Map Section -->
-            <div class="map-section">
-                <div style="width: 100%; height: 400px; border-radius: 15px; overflow: hidden;">
-                    <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3858.1385734496016!2d121.0493210751221!3d14.761221873123954!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3397b0215c5f5509%3A0xe47b1ff182ae61df!2s2651%20Magnolia%20St%2C%20Caloocan%2C%20Metro%20Manila!5e0!3m2!1sfil!2sph!4v1760868403578!5m2!1sfil!2sph" 
-                    width="800" 
-                    height="600" 
-                    style="border:0;" 
-                    allowfullscreen="" 
-                    loading="lazy" 
-                    referrerpolicy="no-referrer-when-downgrade">
-                </iframe>
-                </div>
+            <div style="width: 100%; height: 400px; border-radius: 15px; overflow: hidden;">
+                <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3858.1385734496016!2d121.0493210751221!3d14.761221873123954!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3397b0215c5f5509%3A0xe47b1ff182ae61df!2s2651%20Magnolia%20St%2C%20Caloocan%2C%20Metro%20Manila!5e0!3m2!1sfil!2sph!4v1760868403578!5m2!1sfil!2sph" 
+                width="800" 
+                height="600" 
+                style="border:0;" 
+                allowfullscreen="" 
+                loading="lazy" 
+                referrerpolicy="no-referrer-when-downgrade">
+            </iframe>
             </div>
         </div>
     </div>
@@ -616,22 +657,6 @@ document.getElementById('contactForm').addEventListener('submit', function(e) {
     const email = document.getElementById('email');
     const subject = document.getElementById('subject');
     const message = document.getElementById('message');
-
-    // Check if user is logged in (from PHP session)
-    const isLoggedIn = <?php echo isset($_SESSION['user_id']) ? 'true' : 'false'; ?>;
-
-    if (!isLoggedIn) {
-        e.preventDefault();
-        Swal.fire({
-            icon: 'warning',
-            title: 'Login Required',
-            text: 'Please login first to send a message!',
-            confirmButtonText: 'Go to Login'
-        }).then(() => {
-            window.location.href = '../login/login.php';
-        });
-        return; // stop further validation
-    }
 
     function validateField(field, checkEmail=false) {
         const msg = field.nextElementSibling;
@@ -652,13 +677,32 @@ document.getElementById('contactForm').addEventListener('submit', function(e) {
 
     if (!isValid) {
         e.preventDefault();
+        Swal.fire({
+            icon: 'error',
+            title: 'Validation Error',
+            text: 'Please fill in all required fields correctly.',
+        });
     }
+});
+
+// Real-time validation
+document.querySelectorAll('#contactForm input, #contactForm textarea').forEach(field => {
+    field.addEventListener('input', function() {
+        const msg = this.nextElementSibling;
+        if (this.value.trim() === '') {
+            this.style.borderColor = '#f56565';
+            msg.style.display = 'block';
+        } else {
+            this.style.borderColor = '#d4a942';
+            msg.style.display = 'none';
+        }
+    });
 });
 </script>
     <script>
         document.addEventListener("DOMContentLoaded", () => {
             const sections = document.querySelectorAll(".section");
-            const revealSection = () => {
+            const revealSection = () => {l
                 sections.forEach(section => {
                     const position = section.getBoundingClientRect().top;
                     const screenHeight = window.innerHeight;
